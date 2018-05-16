@@ -3,11 +3,8 @@
   <head>
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
-    <link rel="stylesheet" href="../css/reset.css"/>
-    <link rel="stylesheet" href="../css/normalize.css"/>
-    <link rel="stylesheet" href="../css/base.css"/>
-    <script src="../js/d3-v4.4.1.min.js"></script>
-    <link rel="stylesheet" href="css/chart.css"/>    
+    <script src="js/d3-v4.4.1.min.js"></script>
+    <link rel="stylesheet" href="css/chart.css"/>
     <style>
       #chart{
         width:100%;height:30em;
@@ -435,48 +432,49 @@
       <tr><td>Volvo 264GL</td><td>17</td><td>6</td><td>163</td><td>125</td><td>3140</td><td>78</td></tr>
       <tr><td>Volvo Diesel</td><td>30.7</td><td>6</td><td>145</td><td>76</td><td>3160</td><td>81</td></tr>
     </table>
-    
+
     <!-- UI component for selection -->
     <div id="main">
       <div id="rightcolall">
-        <input id="btn" type="button" value="Dimensions" class="hide" 
+        <input id="btn" type="button" value="Dimensions" class="hide"
               onclick="showDialog()" />
       </div>
-      
+
       <div id="leftcol">
         <svg id="chart"></svg>
       </div>
-      
+
       <div id="modal" class="modal" draggable=true>
         <div class="mcontent">
           <div id="mheader" class="mheader">
-            <span>Dimensions</span><span class="mclose" 
+            <span>Dimensions</span><span class="mclose"
                   onclick="document.getElementById('modal').style.display = 'none';">&times;</span>
           </div>
           <div class="mbody">
             <ul>
-              <li><input id="chk_eco" class="car" type="checkbox" value="economy" onclick="show(this)"/> 
+              <li><input id="chk_eco" class="car" type="checkbox" value="economy" onclick="show(this)"/>
                 <label for="chk_eco">economy</label></li>
-              <li><input id="chk_cyl" class="car" type="checkbox" value="cylinders" onclick="show(this)"/> 
+              <li><input id="chk_cyl" class="car" type="checkbox" value="cylinders" onclick="show(this)"/>
                 <label for="chk_cyl">cylinders</label></li>
-              <li><input id="chk_disp" class="car" type="checkbox" value="displacement" onclick="show(this)"/> 
+              <li><input id="chk_disp" class="car" type="checkbox" value="displacement" onclick="show(this)"/>
                 <label for="chk_disp">displacement</label></li>
-              <li><input id="chk_pow" class="car" type="checkbox" value="power" onclick="show(this)"/> 
+              <li><input id="chk_pow" class="car" type="checkbox" value="power" onclick="show(this)"/>
                 <label for="chk_pow">power</label></li>
-              <li><input id="chk_wei" class="car" type="checkbox" value="weight" onclick="show(this)"/> 
+              <li><input id="chk_wei" class="car" type="checkbox" value="weight" onclick="show(this)"/>
                 <label for="chk_wei">weight</label></li>
-              <li><input id="chk_year" class="car" type="checkbox" value="year" onclick="show(this)"/> 
+              <li><input id="chk_year" class="car" type="checkbox" value="year" onclick="show(this)"/>
                 <label for="chk_year">year</label></li>
             </ul>
           </div>
         </div>
-      </div> 
+      </div>
+    </div>
 
     <script>
       var props=[];
       var cars=[];
-      
-      // Parse the html table 
+
+      // Parse the html table
       var rows=document.getElementsByTagName("tr");
       var head=rows[0].innerHTML.split("<th>");
       for (i=1;i<head.length;i++){
@@ -499,14 +497,14 @@
 	window.addEventListener('mouseup', mouseUp, true);
       window.addEventListener('resize', dialogResMove,true);
 
-	function mouseDown(e){ 
-	  window.addEventListener('mousemove', mouseMove, true); 
+	function mouseDown(e){
+	  window.addEventListener('mousemove', mouseMove, true);
 	  div.classList.add("move");
 	  offset= [e.clientY - dlg.offsetTop, e.clientX - dlg.offsetLeft];
 	}
 	function mouseUp() {window.removeEventListener('mousemove', mouseMove, true);div.classList.remove("move");}
 	function mouseMove(e) {
-	  dlg.style.top = (e.clientY - offset[0]) + 'px'; 
+	  dlg.style.top = (e.clientY - offset[0]) + 'px';
 	  dlg.style.left = (e.clientX - offset[1]) + 'px';
 	}
 	function dialogResMove(e){
@@ -565,7 +563,7 @@
         svg = d3.select("#chart")
           .append("g")
           .attr("transform", "translate(" + 0 + "," + margin.top + ")");
-      
+
         // Extract the list of dimensions and create a scale for each.
         selectedDimensions="";
         x.domain(selectedDimensions = d3.keys(cars[0])
@@ -577,7 +575,7 @@
           })
         );
         dimension=selectedDimensions;
-        
+
         // Add blue foreground lines; thickness in css.
         foreground = svg.append("g")
           .attr("class", "foreground")
@@ -608,12 +606,12 @@
         .attr("font-size", fontSize)
         .attr("stroke-width", dW);
     }
-      
-     
+
+
       // Returns the path for a given data point.
     function path(d) {
       return line(selectedDimensions.map(function(p) { return [position(p)+dW, y[p](d[p])+dW]; }));
-    } 
+    }
 
     function position(d) {
       var v = dragging[d];
@@ -632,11 +630,11 @@
 
       var vbmx = -15, vbmy = 0;
       vbw = (widthpx/heightpx*100);
-      vbh = 100; 
+      vbh = 100;
       var vbr = vbmx + " " + vbmy + " " + vbw + " " + vbh;
-          
+
       var width = vbw - 0;
-      var height = vbh - 0; 
+      var height = vbh - 0;
       d3.select("svg").attr("viewBox", vbr);
 
       // Set breakpoints in pixels.
@@ -684,8 +682,8 @@
       a.attr("transform", "rotate("+anglet+")")
       a.attr("dy", dyt)
       a.attr("dx", dxt);
-    }	
-      
+    }
+
     function show(element){
       variable=[]
       ids='#'+element.id
@@ -699,11 +697,11 @@
       else{
         for (i in myChks) {
           if (myChks[i] == element.id) {
-            d3.select("#"+myAxes[i]).style("display", "none");              
+            d3.select("#"+myAxes[i]).style("display", "none");
           }
         }
       }
-      
+
       for (i=0;i<myChks.length;i++){
         var elt=document.getElementById(myChks[i]);
         if (elt.checked) {variable.push(elt.value);}
