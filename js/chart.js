@@ -63,7 +63,7 @@ var titley=2.5, titleStep=-1.5; //displacement for axes titles
 var angStep=-45; // rotation step
 var margin = {top:20, right: 30, bottom: 5, left: 2};
 
-
+var hid = [];
 
 paralelCoordinates("35em", "50em")
 resize();
@@ -79,6 +79,8 @@ function paralelCoordinates(bp1, bp2){
   var height = vbhI - vbmyI;
   var fontSize = vbhI / 30; // set font size to 1/30 th of height??
 
+  var inv = [];
+
   d3.select("svg").attr("viewBox", vbr);
 
   x = d3.scalePoint().range([margin.left, width - margin.right]);
@@ -90,15 +92,18 @@ function paralelCoordinates(bp1, bp2){
   svg = d3.select("#chart")
     .append("g")
     .attr("transform", "translate(" + 0 + "," + margin.top + ")");
-
+  for(k in d3.keys(cars[0])){
+    inv[d3.keys(cars[0])[k]] = 0;
+    hid[d3.keys(cars[0])[k]] = 0;
+  }
   // Extract the list of dimensions and create a scale for each.
   selectedDimensions="";
   x.domain(selectedDimensions = d3.keys(cars[0])
     .filter(function(d) {
-      return (d != "name" && d!="0-60 mph (s)") && (
-        y[d] = d3.scaleLinear()
+      return (d != "name" && d!="0-60 mph (s)") && 
+        (y[d] = d3.scaleLinear()
           .domain(d3.extent(cars, function(p) { return +p[d]; }))
-          .range([height-margin.top-dy, margin.bottom]));
+          .range([height-margin.top-dy,margin.bottom]));
     })
   );
   dimension=selectedDimensions;
@@ -117,17 +122,48 @@ function paralelCoordinates(bp1, bp2){
     .enter().append("g")
     .attr("class", "dimension")
     .attr("id", function(d,i){return d.slice(0,2);})
-
   // Add an axis and title; d3 v4 requires filling the title.
   a=g.append("g")
     .attr("class", "axis")
-    .each(function(d) {d3.select(this).call(axis.scale(y[d]).tickSize("1.5").tickPadding("1.5")); })
+    .each(function(d) {
+      d3.select(this)
+      .call(
+         axis.scale(y[d])
+        .tickSize("1.5")
+        .tickPadding("1.5")
+      );
+     })
     .append("text")
     .attr("class", "title")
     .attr("fill", "black")
     .style("text-anchor", "middle")
     .attr("y",titley)
-    .text(function(d) {return d;});
+    .text(function(d) {return d;})
+    .on("click",function(d){
+      inv[d] = !inv[d];
+
+      selectedDimensions = dimension.filter(function(d) {
+          return (!hid[d]) && (
+            (!inv[d] && (y[d] = d3.scaleLinear()
+              .domain(d3.extent(cars, function(p) { return +p[d]; }))
+              .range([height-margin.top-dy,margin.bottom])))
+            || (inv[d] && (y[d] = d3.scaleLinear()
+              .domain(d3.extent(cars, function(p) { return +p[d]; }))
+              .range([margin.bottom,height-margin.top-dy]))))
+            ;
+        });
+      x.domain(selectedDimensions);
+      var widthpx = parseInt(d3.select("#chart").style("width")) ,
+        heightpx = parseInt(d3.select("#chart").style("height")) ;
+      var width = (widthpx/heightpx*100);
+
+      x.range([margin.left, width-margin.right], 2); 
+
+      //g = svg.selectAll(".dimension").data(selectedDimensions);
+
+      g.attr("transform", function(d) { if (x(d)) return "translate(" + x(d)  + ")";})
+      foreground.attr("d", path);  
+    });
 
   svg.selectAll(".axis")
     .attr("font-size", fontSize)
@@ -137,7 +173,10 @@ function paralelCoordinates(bp1, bp2){
 
 // Returns the path for a given data point.
 function path(d) {
-  return line(selectedDimensions.map(function(p) { return [position(p)+dW, y[p](d[p])+dW]; }));
+  return line(
+    selectedDimensions.map(function(p) {
+      return [position(p)+dW, y[p](d[p])+dW];
+    }));
 }
 
 function position(d) {
@@ -174,10 +213,10 @@ function resize() {
     if (nrSeg<2) nrSeg=2;
     if (nrSeg>dim) nrSeg=dim;
     selectedDimensions=[];
-
     var elements=document.getElementsByClassName("dimension");
     for (i=0;i<elements.length;i++) {elements[i].removeAttribute("style");}
     for (i=0;i<nrSeg;i++){
+      hid[dimension[i]] = false;
       selectedDimensions.push(dimension[i]);
       g.data(selectedDimensions);
       x.domain(selectedDimensions);
@@ -186,6 +225,7 @@ function resize() {
     for (i=nrSeg;i<dim;i++){
       d3.select("#"+myAxes[i]).style("display","none");
       document.getElementById(myChks[i]).checked=false;
+      hid[dimension[i]] = true;
     }
     if (nrSeg<dim){
       document.getElementById("btn").removeAttribute("class");
@@ -218,6 +258,7 @@ function show(element){
     for (i in myChks) {
       if (myChks[i] == element.id) {
         document.getElementById(myAxes[i]).removeAttribute("style");
+        hid[myAxes[i]] = 0;
       }
     }
   }
@@ -225,6 +266,7 @@ function show(element){
     for (i in myChks) {
       if (myChks[i] == element.id) {
         d3.select("#"+myAxes[i]).style("display", "none");
+        hid[myAxes[i]] = 1;
       }
     }
   }
