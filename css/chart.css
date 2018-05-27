@@ -84,11 +84,18 @@ li{list-style-type: none; margin-left: 0; font-size: 0.625em;}
   shape-rendering: crispEdges;
 }
 
-.foreground path {
+.focused path {
   fill: none;
   stroke: steelblue;
   stroke-width: 0.1;
 }
+
+.foreground path {
+  fill: none;
+  stroke: grey;
+  stroke-width: 0.1;
+}
+
 
 .brush .extent {
   fill-opacity: .3;

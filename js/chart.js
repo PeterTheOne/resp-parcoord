@@ -52,6 +52,7 @@ var dim=props.length-1; //number of used properties (name is excluded)
 var mysdim=40; // minimal default size of a segment;
 var svg, g, line;
 var foreground;
+var focused;
 var x,y;
 var selectedDimensions;
 var dimension;
@@ -66,20 +67,26 @@ var margin = {top:20, right: 30, bottom: 5, left: 2};
 var hid = [];
 
 paralelCoordinates("35em", "50em")
-resize();
-d3.select(window).on('resize', resize);
+plot();
+d3.select(window).on('resize', plot);
 
-
-function paralelCoordinates(bp1, bp2){
-  breakpoint=[bp1, bp2];
 
   var vbmxI = 0, vbmyI = 0, vbwI = 100, vbhI = 100;
   var vbr=vbmxI + " " + vbmyI + " " + vbwI + " " + vbhI;
   var width = vbwI - vbmxI;
   var height = vbhI - vbmyI;
-  var fontSize = vbhI / 30; // set font size to 1/30 th of height??
+  
+
+function paralelCoordinates(bp1, bp2){
+  breakpoint=[bp1, bp2];
 
   var inv = [];
+  var vbmxI = 0, vbmyI = 0, vbwI = 100, vbhI = 100;
+  var vbr=vbmxI + " " + vbmyI + " " + vbwI + " " + vbhI;
+  var width = vbwI - vbmxI;
+  var height = vbhI - vbmyI;
+  
+  var fontSize = vbhI / 30; // set font size to 1/30 th of height??
 
   d3.select("svg").attr("viewBox", vbr);
 
@@ -102,19 +109,22 @@ function paralelCoordinates(bp1, bp2){
     .filter(function(d) {
       return (d != "name" && d!="0-60 mph (s)") && 
         (y[d] = d3.scaleLinear()
-          .domain(d3.extent(cars, function(p) { return +p[d]; }))
-          .range([height-margin.top-dy,margin.bottom]));
+          .domain(d3.extent(cars
+            , function(p) { return +p[d]; }))
+          .range([height-margin.top-dy,margin.bottom])
+        );
     })
   );
   dimension=selectedDimensions;
 
-  // Add blue foreground lines; thickness in css.
+
+  // Add gray foreground lines; thickness in css.
   foreground = svg.append("g")
     .attr("class", "foreground")
     .selectAll("path")
     .data(cars)
     .enter().append("path")
-    .attr("d", path)
+    .attr("d", path);
 
   // Add a group element for each dimension.
   g = svg.selectAll(".dimension")
@@ -138,45 +148,22 @@ function paralelCoordinates(bp1, bp2){
     .attr("fill", "black")
     .style("text-anchor", "middle")
     .attr("y",titley)
-    .text(function(d) {return d;})
-    .on("click",function(d){
-      inv[d] = !inv[d];
+    .text(function(d) {return d;});
 
-      selectedDimensions = dimension.filter(function(d) {
-          return (!hid[d]) && (
-            (!inv[d] && (y[d] = d3.scaleLinear()
-              .domain(d3.extent(cars, function(p) { return +p[d]; }))
-              .range([height-margin.top-dy,margin.bottom])))
-            || (inv[d] && (y[d] = d3.scaleLinear()
-              .domain(d3.extent(cars, function(p) { return +p[d]; }))
-              .range([margin.bottom,height-margin.top-dy]))))
-            ;
-        });
-      x.domain(selectedDimensions);
-      var widthpx = parseInt(d3.select("#chart").style("width")) ,
-        heightpx = parseInt(d3.select("#chart").style("height")) ;
-      var width = (widthpx/heightpx*100);
 
-      x.range([margin.left, width-margin.right], 2); 
 
-      //g = svg.selectAll(".dimension").data(selectedDimensions);
-
-      g.attr("transform", function(d) { if (x(d)) return "translate(" + x(d)  + ")";})
-      foreground.attr("d", path);  
-    });
-
-  svg.selectAll(".axis")
-    .attr("font-size", fontSize)
-    .attr("stroke-width", dW);
+  plot();
 }
 
 
 // Returns the path for a given data point.
 function path(d) {
   return line(
-    selectedDimensions.map(function(p) {
+    selectedDimensions
+    .map(function(p) {
       return [position(p)+dW, y[p](d[p])+dW];
-    }));
+    })
+    );
 }
 
 function position(d) {
@@ -189,7 +176,21 @@ function getBaseFontSize(){
 }
 
 // resize function
-function resize() {
+function plot() {
+
+  var vbmxI = 0, vbmyI = 0, vbwI = 100, vbhI = 100;
+  var vbr=vbmxI + " " + vbmyI + " " + vbwI + " " + vbhI;
+  var width = vbwI - vbmxI;
+  var height = vbhI - vbmyI;
+  
+  var fontSize = vbhI / 30; // set font size to 1/30 th of height??
+
+  svg.selectAll(".axis")
+    .attr("font-size", fontSize)
+    .attr("stroke-width", dW);
+
+
+
   // set the view box for the chart
   var widthpx = parseInt(d3.select("#chart").style("width")) ,
     heightpx = parseInt(d3.select("#chart").style("height")) ;
@@ -208,7 +209,7 @@ function resize() {
   var mediumpx=parseFloat(breakpoint[1])*getBaseFontSize();
 
   // Automatic adjustment of the number of segments.
-  if (variable.length==0){
+  if (variable.length==0){ // soft adjustment
     var nrSeg=Math.floor(width/mysdim);
     if (nrSeg<2) nrSeg=2;
     if (nrSeg>dim) nrSeg=dim;
@@ -216,7 +217,6 @@ function resize() {
     var elements=document.getElementsByClassName("dimension");
     for (i=0;i<elements.length;i++) {elements[i].removeAttribute("style");}
     for (i=0;i<nrSeg;i++){
-      hid[dimension[i]] = false;
       selectedDimensions.push(dimension[i]);
       g.data(selectedDimensions);
       x.domain(selectedDimensions);
@@ -225,31 +225,57 @@ function resize() {
     for (i=nrSeg;i<dim;i++){
       d3.select("#"+myAxes[i]).style("display","none");
       document.getElementById(myChks[i]).checked=false;
-      hid[dimension[i]] = true;
     }
-    if (nrSeg<dim){
+
+    if (nrSeg<dim){ // show or hide 'Dimensions' button
       document.getElementById("btn").removeAttribute("class");
     }
     else {
       document.getElementById("btn").setAttribute("class", "hide");
     }
+  } else { // if dimensions are chosen
+    // TODO override whatever 'show(element)' method does
   }
+
+  svg.selectAll("g.focused").remove();
+
+        var lb = Math.floor(Math.random() * 4) + 3;
+        var ub = Math.floor(Math.random() * 4) + 5;
+        console.log(lb + " " + ub);
+  // Add blue focused foreground lines; thickness in css.
+  focused = svg.append("g") // can we make the text always on top?
+                            // also a better solution could be to change the css class
+                            // of certain elements from foreground to focused
+    .attr("class", "focused")
+    .selectAll("path")
+    .data(cars
+      .filter(function(p) {
+        return lb <= p.cylinders && p.cylinders <= ub; // only a dummy filter
+      }
+    ))
+    .enter().append("path")
+    .attr("d", path);
+
   var anchort="start", brp;
   if (widthpx>mediumpx) {brp=0;anchort="middle"}
   else if (widthpx>narrowpx) brp=1;
   else brp=2;
-  var anglet=brp*angStep;
+  var anglet=brp*angStep; // rotating the text
   var dxt=brp*(titleStep);
   var dyt=brp*(titleStep);
 
   x.range([margin.left, width-margin.right]);
   g.attr("transform", function(d) {if (x(d)) return "translate(" + x(d) + ")"; })
   foreground.attr("d", path)
+  //focused.attr("d", path)
   a.style("text-anchor", anchort);
   a.attr("transform", "rotate("+anglet+")")
   a.attr("dy", dyt)
   a.attr("dx", dxt);
 }
+
+
+
 
 function show(element){
   variable=[]
@@ -285,4 +311,46 @@ function show(element){
   x.range([margin.left, width-margin.right], 2);
   g.attr("transform", function(d) { if (x(d)) return "translate(" + x(d) + ")";})
   foreground.attr("d", path);
+  focused.attr("d", path);
 }
+
+var NONE = "NONE", ANGULAR = "ANGULAR", REGULAR = "REGULAR";
+var brushSpec = {};
+brushSpec.type = NONE;
+
+
+function showDimension(dimension){
+  selectedDimensions.append(dimension);
+  plot();
+}
+
+function hideDimension(dimension){
+  selectedDimensions.remove(dimension);
+  plot();
+}
+
+function brush(dims, frm, to){
+  clearBrush();
+  brushSpec.type = REGULAR;
+  for(i in dims)
+    brushSpec.b[i] = [frm[i],to[i]];
+  plot();
+}
+
+function angularBrush(dim1, dim2, frm, to){
+  clearBrush();
+  brushSpec.type = ANGULAR;
+  brushSpec.angular.dim = [dim1,dim2];
+  brushSpec.angular.range = [frm,to];
+  plot();
+}
+
+function clearBrush(){
+  for(i in brushSpec.b)
+    brushSpec.b[i] = dmn[i];
+  angBrush = undefined;
+  brushSpec.type = NONE;
+  plot();
+}
+
+
