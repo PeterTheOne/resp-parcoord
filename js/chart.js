@@ -64,7 +64,19 @@ var titley=2.5, titleStep=-1.5; //displacement for axes titles
 var angStep=-45; // rotation step
 var margin = {top:20, right: 30, bottom: 5, left: 2};
 
-var hid = [];
+
+var NONE = "NONE", ANGULAR = "ANGULAR", REGULAR = "REGULAR";
+var brushSpec = {
+  type : NONE,
+  b :[],
+  angular : {
+    dim1 : undefined,
+    dim2 : undefined,
+    frm  : undefined,
+    to  : undefined
+  }
+};
+
 
 paralelCoordinates("35em", "50em")
 plot();
@@ -99,10 +111,10 @@ function paralelCoordinates(bp1, bp2){
   svg = d3.select("#chart")
     .append("g")
     .attr("transform", "translate(" + 0 + "," + margin.top + ")");
-  for(k in d3.keys(cars[0])){
-    inv[d3.keys(cars[0])[k]] = 0;
-    hid[d3.keys(cars[0])[k]] = 0;
-  }
+  // for(k in d3.keys(cars[0])){
+  //   inv[d3.keys(cars[0])[k]] = 0;
+  //   hid[d3.keys(cars[0])[k]] = 0;
+  // }
   // Extract the list of dimensions and create a scale for each.
   selectedDimensions="";
   x.domain(selectedDimensions = d3.keys(cars[0])
@@ -175,6 +187,9 @@ function getBaseFontSize(){
   return (parseFloat(getComputedStyle(document.documentElement).fontSize));
 }
 
+
+
+
 // resize function
 function plot() {
 
@@ -239,9 +254,22 @@ function plot() {
 
   svg.selectAll("g.focused").remove();
 
-        var lb = Math.floor(Math.random() * 4) + 3;
-        var ub = Math.floor(Math.random() * 4) + 5;
-        console.log(lb + " " + ub);
+
+/// snippet only for testing regular brush ////
+  brushSpec.type = REGULAR;
+  var lb1 = Math.floor(Math.random() * 4) + 3;
+  var ub1 = Math.floor(Math.random() * 4) + 5;
+  console.log(lb1 + " " + ub1);
+  brushSpec.b.cylinders = [lb1,ub1];
+
+  var lb2 = Math.floor(Math.random() * 100) + 1;
+  var ub2 = Math.floor(Math.random() * 100) + 100;
+  console.log(lb2 + " " + ub2);
+  brushSpec.b.power = [lb2,ub2];
+
+/// END OF IT ////
+
+
   // Add blue focused foreground lines; thickness in css.
   focused = svg.append("g") // can we make the text always on top?
                             // also a better solution could be to change the css class
@@ -250,9 +278,28 @@ function plot() {
     .selectAll("path")
     .data(cars
       .filter(function(p) {
-        return lb <= p.cylinders && p.cylinders <= ub; // only a dummy filter
-      }
-    ))
+        //return lb <= p.cylinders && p.cylinders <= ub; // only a dummy filter
+        //console.log(brushSpec.type);
+        ///// The whole filtering (brushing) logic /////
+        if(brushSpec.type == REGULAR){ 
+          for(var dim in brushSpec.b){
+
+            if(!selectedDimensions.includes(dim)) continue;
+            if(brushSpec.b[dim] == undefined || brushSpec.b[dim] == -1) continue;
+            if(brushSpec.b[dim][0] > p[dim] || p[dim] > brushSpec.b[dim][1]) return false;
+          }
+          return true;
+        } else if(brushSpec.type == ANGULAR){
+          var d1 = brushSpec.angular.dim1;
+          var d2 = brushSpec.angular.dim2;
+          var frm = brushSpec.angular.frm;
+          var to = brushSpec.angular.to;
+          var dif = p[d1] - p[d2];
+          return (frm <= dif && dif <= to);
+        }
+        return true; // No filter applied
+      })
+    )
     .enter().append("path")
     .attr("d", path);
 
@@ -267,7 +314,7 @@ function plot() {
   x.range([margin.left, width-margin.right]);
   g.attr("transform", function(d) {if (x(d)) return "translate(" + x(d) + ")"; })
   foreground.attr("d", path)
-  //focused.attr("d", path)
+  focused.attr("d", path)
   a.style("text-anchor", anchort);
   a.attr("transform", "rotate("+anglet+")")
   a.attr("dy", dyt)
@@ -314,10 +361,6 @@ function show(element){
   focused.attr("d", path);
 }
 
-var NONE = "NONE", ANGULAR = "ANGULAR", REGULAR = "REGULAR";
-var brushSpec = {};
-brushSpec.type = NONE;
-
 
 function showDimension(dimension){
   selectedDimensions.append(dimension);
@@ -332,7 +375,7 @@ function hideDimension(dimension){
 function brush(dims, frm, to){
   clearBrush();
   brushSpec.type = REGULAR;
-  for(i in dims)
+  for(var i in dims)
     brushSpec.b[i] = [frm[i],to[i]];
   plot();
 }
@@ -346,8 +389,8 @@ function angularBrush(dim1, dim2, frm, to){
 }
 
 function clearBrush(){
-  for(i in brushSpec.b)
-    brushSpec.b[i] = dmn[i];
+  for(var i in brushSpec.b)
+    brushSpec.b[i] = -1;
   angBrush = undefined;
   brushSpec.type = NONE;
   plot();
