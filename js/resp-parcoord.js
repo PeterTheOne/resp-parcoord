@@ -1,14 +1,11 @@
 'use strict';
 
 function respParcoords(data, options) {
-  const props = Object.keys(data[0]);
-  const dim = props.length - 1; //number of used properties (name is excluded)
-
-
   //arrays of ids for axes and checkbuttons
-  // todo: replace these with something dynamic
-  var myAxes = ["ec", "cy", "di", "po", "we", "ye"];
-  var myChks = ["chk_eco", "chk_cyl", "chk_disp", "chk_pow", "chk_wei", "chk_year"];
+  let myAxes = Object.keys(data[0]);
+  myAxes.splice(0, 1); // remove name column
+  const myChks = myAxes.map(value => 'chk_' + value);
+  const dim = myAxes.length; //number of used properties
 
   const mysdim = 40; // minimal default size of a segment;
   var svg, g, line;
