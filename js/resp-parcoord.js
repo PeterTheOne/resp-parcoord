@@ -4,6 +4,7 @@ function respParcoords(data, options) {
   //arrays of ids for axes and checkbuttons
   let myAxes = Object.keys(data[0]);
   myAxes.splice(0, 1); // remove name column
+  myAxes = myAxes.map(value => value.substr(0, 2)); // not sure why this is needed
   const myChks = myAxes.map(value => 'chk_' + value);
   const dim = myAxes.length; //number of used properties
 
