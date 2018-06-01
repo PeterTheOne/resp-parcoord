@@ -388,6 +388,6 @@ function respParcoords(data, options) {
       if (dlg.offsetLeft+dlg.offsetWidth+jumpMove/2>ww) dlg.style.left=(ww-dlg.offsetWidth-jumpMove)+'px';
     }
 
-    for (i in myChks) {document.getElementById(myChks[i]).checked = true;}
+    for (let i in myChks) {document.getElementById(myChks[i]).checked = true;}
   }
 }
