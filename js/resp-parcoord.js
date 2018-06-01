@@ -2,51 +2,15 @@
 
 function respParcoords(data, options) {
   const props = Object.keys(data[0]);
+  const dim = props.length - 1; //number of used properties (name is excluded)
 
-
-  // weird modal stuff
-  /*
-  // Move the dimensions selection dialog
-  var offset=[0,0];
-  var div = document.getElementById('mheader');
-  var dlg = document.getElementById('modal');
-  var jumpMove=50; // step for dialog move if close to border on resize
-  div.addEventListener('mousedown', mouseDown, true);
-  window.addEventListener('mouseup', mouseUp, true);
-  window.addEventListener('resize', dialogResMove,true);
-
-  function mouseDown(e){
-    window.addEventListener('mousemove', mouseMove, true);
-    div.classList.add("move");
-    offset= [e.clientY - dlg.offsetTop, e.clientX - dlg.offsetLeft];
-  }
-  function mouseUp() {
-    window.removeEventListener('mousemove', mouseMove, true);div.classList.remove("move");
-  }
-  function mouseMove(e) {
-    dlg.style.top = (e.clientY - offset[0]) + 'px';
-    dlg.style.left = (e.clientX - offset[1]) + 'px';
-  }
-  function dialogResMove(e){
-    if (dlg.offsetLeft+dlg.offsetWidth+jumpMove/2>window.innerWidth) dlg.style.left=(dlg.offsetLeft-jumpMove)+'px';
-  }
-  function showDialog(){
-    var ww=window.innerWidth;
-    document.getElementById('modal').style.display='initial';
-    if (dlg.offsetLeft+dlg.offsetWidth+jumpMove/2>ww) dlg.style.left=(ww-dlg.offsetWidth-jumpMove)+'px';
-  }
-  */
 
   //arrays of ids for axes and checkbuttons
   // todo: replace these with something dynamic
   var myAxes = ["ec", "cy", "di", "po", "we", "ye"];
   var myChks = ["chk_eco", "chk_cyl", "chk_disp", "chk_pow", "chk_wei", "chk_year"];
-  //for (i in myChks) {document.getElementById(myChks[i]).checked = true;}
 
-  // end of: weird modal stuff
-
-  var dim = props.length - 1; //number of used properties (name is excluded)
-  var mysdim = 40; // minimal default size of a segment;
+  const mysdim = 40; // minimal default size of a segment;
   var svg, g, line;
   var foreground;
   var focused;
@@ -76,28 +40,20 @@ function respParcoords(data, options) {
 
   let a;
 
+  let vbmx = 0, vbmy = 0, vbw = 100, vbh = 100;
+  let vbr = vbmx + " " + vbmy + " " + vbw + " " + vbh;
+  let width = vbw - vbmx;
+  let height = vbh - vbmy;
+  let fontSize = vbh / 30; // set font size to 1/30 th of height??
 
-  parallelCoordinates("35em", "50em");
+  init("35em", "50em");
   plot();
   d3.select(window).on('resize', plot);
 
-
-  var vbmxI = 0, vbmyI = 0, vbwI = 100, vbhI = 100;
-  var vbr = vbmxI + " " + vbmyI + " " + vbwI + " " + vbhI;
-  var width = vbwI - vbmxI;
-  var height = vbhI - vbmyI;
-
-
-  function parallelCoordinates(bp1, bp2) {
+  function init(bp1, bp2) {
     breakpoint = [bp1, bp2];
 
     var inv = [];
-    var vbmxI = 0, vbmyI = 0, vbwI = 100, vbhI = 100;
-    var vbr = vbmxI + " " + vbmyI + " " + vbwI + " " + vbhI;
-    var width = vbwI - vbmxI;
-    var height = vbhI - vbmyI;
-
-    var fontSize = vbhI / 30; // set font size to 1/30 th of height??
 
     d3.select("svg").attr("viewBox", vbr);
 
@@ -194,13 +150,7 @@ function respParcoords(data, options) {
 
   // resize function
   function plot() {
-
-    var vbmxI = 0, vbmyI = 0, vbwI = 100, vbhI = 100;
-    var vbr = vbmxI + " " + vbmyI + " " + vbwI + " " + vbhI;
-    var width = vbwI - vbmxI;
-    var height = vbhI - vbmyI;
-
-    var fontSize = vbhI / 30; // set font size to 1/30 th of height??
+    fontSize = vbh / 30; // set font size to 1/30 th of height??
 
     svg.selectAll(".axis")
       .attr("font-size", fontSize)
@@ -211,13 +161,13 @@ function respParcoords(data, options) {
     var widthpx = parseInt(d3.select(options.svgSelector).style("width")),
       heightpx = parseInt(d3.select(options.svgSelector).style("height"));
 
-    var vbmx = -15, vbmy = 0;
-    let vbw = (widthpx / heightpx * 100);
-    let vbh = 100;
-    var vbr = vbmx + " " + vbmy + " " + vbw + " " + vbh;
+    vbmx = -15, vbmy = 0;
+    vbw = (widthpx / heightpx * 100);
+    vbh = 100;
+    vbr = vbmx + " " + vbmy + " " + vbw + " " + vbh;
+    width = vbw - 0;
+    height = vbh - 0;
 
-    var width = vbw - 0;
-    var height = vbh - 0;
     d3.select("svg").attr("viewBox", vbr);
 
     // Set breakpoints in pixels.
@@ -404,5 +354,40 @@ function respParcoords(data, options) {
       brushSpec.b[i] = -1;
     brushSpec.type = NONE;
     plot();
+  }
+
+  // modal (never called) because html template is missing.
+  function initModal() {
+    // Move the dimensions selection dialog
+    var offset=[0,0];
+    var div = document.getElementById('mheader');
+    var dlg = document.getElementById('modal');
+    var jumpMove=50; // step for dialog move if close to border on resize
+    div.addEventListener('mousedown', mouseDown, true);
+    window.addEventListener('mouseup', mouseUp, true);
+    window.addEventListener('resize', dialogResMove,true);
+
+    function mouseDown(e){
+      window.addEventListener('mousemove', mouseMove, true);
+      div.classList.add("move");
+      offset= [e.clientY - dlg.offsetTop, e.clientX - dlg.offsetLeft];
+    }
+    function mouseUp() {
+      window.removeEventListener('mousemove', mouseMove, true);div.classList.remove("move");
+    }
+    function mouseMove(e) {
+      dlg.style.top = (e.clientY - offset[0]) + 'px';
+      dlg.style.left = (e.clientX - offset[1]) + 'px';
+    }
+    function dialogResMove(e){
+      if (dlg.offsetLeft+dlg.offsetWidth+jumpMove/2>window.innerWidth) dlg.style.left=(dlg.offsetLeft-jumpMove)+'px';
+    }
+    function showDialog(){
+      var ww=window.innerWidth;
+      document.getElementById('modal').style.display='initial';
+      if (dlg.offsetLeft+dlg.offsetWidth+jumpMove/2>ww) dlg.style.left=(ww-dlg.offsetWidth-jumpMove)+'px';
+    }
+
+    for (i in myChks) {document.getElementById(myChks[i]).checked = true;}
   }
 }
