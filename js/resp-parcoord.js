@@ -6,9 +6,9 @@ function respParcoords(data, options) {
   myAxes.splice(0, 1); // remove name column
   myAxes = myAxes.map(value => value.substr(0, 2)); // not sure why this is needed
   const myChks = myAxes.map(value => 'chk_' + value);
-  const dim = myAxes.length; //number of used properties
+  const numberDimensions = myAxes.length; //number of used properties
 
-  const mysdim = 40; // minimal default size of a segment;
+  const minSegmentSize = 40; // minimal default size of a segment;
   var svg, g, line;
   var foreground;
   var focused;
@@ -174,26 +174,26 @@ function respParcoords(data, options) {
 
     // Automatic adjustment of the number of segments.
     if (variable.length == 0) { // soft adjustment
-      var nrSeg = Math.floor(width / mysdim);
-      if (nrSeg < 2) nrSeg = 2;
-      if (nrSeg > dim) nrSeg = dim;
+      var numberSegementsShown = Math.floor(width / minSegmentSize);
+      if (numberSegementsShown < 2) numberSegementsShown = 2;
+      if (numberSegementsShown > numberDimensions) numberSegementsShown = numberDimensions;
       selectedDimensions = [];
       var elements = document.getElementsByClassName("dimension");
       for (let i = 0; i < elements.length; i++) {
         elements[i].removeAttribute("style");
       }
-      for (let i = 0; i < nrSeg; i++) {
+      for (let i = 0; i < numberSegementsShown; i++) {
         selectedDimensions.push(dimension[i]);
         g.data(selectedDimensions);
         x.domain(selectedDimensions);
         //document.getElementById(myChks[i]).checked=true;
       }
-      for (let i = nrSeg; i < dim; i++) {
+      for (let i = numberSegementsShown; i < numberDimensions; i++) {
         d3.select("#" + myAxes[i]).style("display", "none");
         //document.getElementById(myChks[i]).checked=false;
       }
 
-      /*if (nrSeg<dim){ // show or hide 'Dimensions' button
+      /*if (numberSegementsShown<dim){ // show or hide 'Dimensions' button
         document.getElementById("btn").removeAttribute("class");
       }
       else {
@@ -305,7 +305,7 @@ function respParcoords(data, options) {
     }
     selectedDimensions = dimension.filter(function (d, i) {
       if (variable.indexOf(d) > -1) return d;
-    })
+    });
     x.domain(selectedDimensions);
 
     var widthpx = parseInt(d3.select(options.svgSelector).style("width")),
