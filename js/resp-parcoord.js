@@ -4,7 +4,6 @@ function respParcoords(data, options) {
   //arrays of ids for axes and checkbuttons
   let myAxes = Object.keys(data[0]);
   myAxes.splice(0, 1); // remove name column
-  myAxes = myAxes.map(value => value.substr(0, 2)); // not sure why this is needed
   const myChks = myAxes.map(value => 'chk_' + value);
   const numberDimensions = myAxes.length; //number of used properties
 
@@ -99,8 +98,8 @@ function respParcoords(data, options) {
       .enter().append("g")
       .attr("class", "dimension")
       .attr("id", function (d, i) {
-        return d.slice(0, 2);
-      })
+        return d;
+      });
     // Add an axis and title; d3 v4 requires filling the title.
     a = g.append("g")
       .attr("class", "axis")
