@@ -14,7 +14,7 @@ function respParcoords(data, options) {
   var focused;
   var x, y;
   var selectedDimensions;
-  var dimension;
+  var dimensions;
   var variable = [];
   var breakpoint = [];
   var dragging;
@@ -25,6 +25,7 @@ function respParcoords(data, options) {
   var axis;
 
   var NONE = "NONE", ANGULAR = "ANGULAR", REGULAR = "REGULAR";
+  // specifies the brushing information
   var brushSpec = {
     type: NONE,
     b: [],
@@ -37,10 +38,12 @@ function respParcoords(data, options) {
     changed : true
   };
 
-
+  // specifies which dimensions are shown, inverted, ...
   var dimensionSpec = {
     hard : false,
     changed : true
+    // selectedDimensions : [],
+    // inverted : []
   };
 
   let a;
@@ -76,7 +79,7 @@ function respParcoords(data, options) {
     selectedDimensions = "";
     x.domain(selectedDimensions = d3.keys(data[0])
       .filter(function (d) {
-        return (d != "name" && d != "0-60 mph (s)") &&
+        return (d != "name" && d != "0-60 mph (s)") && // TODO should not be hardcoded
           (y[d] = d3.scaleLinear()
               .domain(d3.extent(data
                 , function (p) {
@@ -86,7 +89,7 @@ function respParcoords(data, options) {
           );
       })
     );
-    dimension = selectedDimensions;
+    dimensions = selectedDimensions;
 
     g = svg.selectAll(".dimension");
     plot();
@@ -139,13 +142,14 @@ function respParcoords(data, options) {
       if (numberSegementsShown < 2) numberSegementsShown = 2;
       if (numberSegementsShown > numberDimensions) numberSegementsShown = numberDimensions;
       if(selectedDimensions.length != numberSegementsShown){ // if it's the same number, don't change
-        //dimensionSpec.changed = true;
+        dimensionSpec.changed = true;
         if(selectedDimensions.length > numberSegementsShown){
           selectedDimensions = selectedDimensions.slice(0,numberSegementsShown);
         } else {
-          for(let dim in dimension){
-            if(!selectedDimensions.includes(dimension[dim])){
-              selectedDimensions.push(dimension[dim]);
+          for(let dim in dimensions){
+            if(selectedDimensions.length >= numberSegementsShown) break;
+            if(!selectedDimensions.includes(dimensions[dim])){
+              selectedDimensions.push(dimensions[dim]);
               //document.getElementById(myChks[i]).checked=true;
             }
           }
@@ -159,7 +163,7 @@ function respParcoords(data, options) {
         else {
           document.getElementById("btn").setAttribute("class", "hide");
         }*/
-        
+
       }
     } else { // if dimensions are chosen
       // TODO override whatever 'show(element)' method does
@@ -324,7 +328,7 @@ function respParcoords(data, options) {
       //if (elt.checked) {variable.push(elt.value);}
       variable.push(elt.value);
     }
-    selectedDimensions = dimension.filter(function (d, i) {
+    selectedDimensions = dimensions.filter(function (d, i) {
       if (variable.indexOf(d) > -1) return d;
     });
     x.domain(selectedDimensions);
