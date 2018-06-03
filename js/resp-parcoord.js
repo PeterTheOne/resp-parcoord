@@ -10,7 +10,7 @@ function respParcoords(data, options) {
 
   const minSegmentSize = 40; // minimal default size of a segment;
   var svg, g, line;
-  var foreground;
+  var unfocused;
   var focused;
   var x, y;
   var selectedDimensions;
@@ -22,7 +22,7 @@ function respParcoords(data, options) {
   var titley = 2.5, titleStep = -1.5; //displacement for axes titles
   var angStep = -45; // rotation step
   var margin = {top: 20, right: 30, bottom: 5, left: 2};
-
+  var axis;
 
   var NONE = "NONE", ANGULAR = "ANGULAR", REGULAR = "REGULAR";
   var brushSpec = {
@@ -33,7 +33,14 @@ function respParcoords(data, options) {
       dim2: undefined,
       frm: undefined,
       to: undefined
-    }
+    },
+    changed : true
+  };
+
+
+  var dimensionSpec = {
+    hard : false,
+    changed : true
   };
 
   let a;
@@ -59,15 +66,12 @@ function respParcoords(data, options) {
     y = {};
     dragging = {};
     line = d3.line();
-    let axis = d3.axisLeft();
+    axis = d3.axisLeft();
     // chart setting
     svg = d3.select(options.svgSelector)
       .append("g")
       .attr("transform", "translate(" + 0 + "," + margin.top + ")");
-    // for(k in d3.keys(data[0])){
-    //   inv[d3.keys(data[0])[k]] = 0;
-    //   hid[d3.keys(data[0])[k]] = 0;
-    // }
+
     // Extract the list of dimensions and create a scale for each.
     selectedDimensions = "";
     x.domain(selectedDimensions = d3.keys(data[0])
@@ -84,44 +88,7 @@ function respParcoords(data, options) {
     );
     dimension = selectedDimensions;
 
-
-    // Add gray foreground lines; thickness in css.
-    foreground = svg.append("g")
-      .attr("class", "foreground")
-      .selectAll("path")
-      .data(data)
-      .enter().append("path")
-      .attr("d", path);
-
-    // Add a group element for each dimension.
-    g = svg.selectAll(".dimension")
-      .data(selectedDimensions)
-      .enter().append("g")
-      .attr("class", "dimension")
-      .attr("id", function (d, i) {
-        return d.slice(0, 2);
-      })
-    // Add an axis and title; d3 v4 requires filling the title.
-    a = g.append("g")
-      .attr("class", "axis")
-      .each(function (d) {
-        d3.select(this)
-          .call(
-            axis.scale(y[d])
-              .tickSize("1.5")
-              .tickPadding("1.5")
-          );
-      })
-      .append("text")
-      .attr("class", "title")
-      .attr("fill", "black")
-      .style("text-anchor", "middle")
-      .attr("y", titley)
-      .text(function (d) {
-        return d;
-      });
-
-
+    g = svg.selectAll(".dimension");
     plot();
   }
 
@@ -148,12 +115,6 @@ function respParcoords(data, options) {
 
   // resize function
   function plot() {
-    fontSize = vbh / 30; // set font size to 1/30 th of height??
-
-    svg.selectAll(".axis")
-      .attr("font-size", fontSize)
-      .attr("stroke-width", dW);
-
 
     // set the view box for the chart
     var widthpx = parseInt(d3.select(options.svgSelector).style("width")),
@@ -173,41 +134,41 @@ function respParcoords(data, options) {
     var mediumpx = parseFloat(breakpoint[1]) * getBaseFontSize();
 
     // Automatic adjustment of the number of segments.
-    if (variable.length == 0) { // soft adjustment
+    if (!dimensionSpec.hard) { // soft adjustment
       var numberSegementsShown = Math.floor(width / minSegmentSize);
       if (numberSegementsShown < 2) numberSegementsShown = 2;
       if (numberSegementsShown > numberDimensions) numberSegementsShown = numberDimensions;
-      selectedDimensions = [];
-      var elements = document.getElementsByClassName("dimension");
-      for (let i = 0; i < elements.length; i++) {
-        elements[i].removeAttribute("style");
-      }
-      for (let i = 0; i < numberSegementsShown; i++) {
-        selectedDimensions.push(dimension[i]);
-        g.data(selectedDimensions);
+      if(selectedDimensions.length != numberSegementsShown){ // if it's the same number, don't change
+        //dimensionSpec.changed = true;
+        if(selectedDimensions.length > numberSegementsShown){
+          selectedDimensions = selectedDimensions.slice(0,numberSegementsShown);
+        } else {
+          for(let dim in dimension){
+            if(!selectedDimensions.includes(dimension[dim])){
+              selectedDimensions.push(dimension[dim]);
+              //document.getElementById(myChks[i]).checked=true;
+            }
+          }
+        }
         x.domain(selectedDimensions);
-        //document.getElementById(myChks[i]).checked=true;
-      }
-      for (let i = numberSegementsShown; i < numberDimensions; i++) {
-        d3.select("#" + myAxes[i]).style("display", "none");
-        //document.getElementById(myChks[i]).checked=false;
-      }
+        g.data(selectedDimensions);
 
-      /*if (numberSegementsShown<dim){ // show or hide 'Dimensions' button
-        document.getElementById("btn").removeAttribute("class");
+        /*if (numberSegementsShown<dim){ // show or hide 'Dimensions' button
+          document.getElementById("btn").removeAttribute("class");
+        }
+        else {
+          document.getElementById("btn").setAttribute("class", "hide");
+        }*/
+        
       }
-      else {
-        document.getElementById("btn").setAttribute("class", "hide");
-      }*/
     } else { // if dimensions are chosen
       // TODO override whatever 'show(element)' method does
     }
 
-    svg.selectAll("g.focused").remove();
-
 
     /// snippet only for testing regular brush ////
     brushSpec.type = REGULAR;
+    brushSpec.changed = true;
     var lb1 = Math.floor(Math.random() * 4) + 3;
     var ub1 = Math.floor(Math.random() * 4) + 5;
     console.log(lb1 + " " + ub1);
@@ -220,39 +181,99 @@ function respParcoords(data, options) {
 
     /// END OF IT ////
 
+    if(dimensionSpec.changed){ // replot unfocused stuff
+      svg.selectAll("g.unfocused").remove();
 
-    // Add blue focused foreground lines; thickness in css.
-    focused = svg.append("g") // can we make the text always on top?
-    // also a better solution could be to change the css class
-    // of certain elements from foreground to focused
-      .attr("class", "focused")
-      .selectAll("path")
-      .data(data
-        .filter(function (p) {
-          //return lb <= p.cylinders && p.cylinders <= ub; // only a dummy filter
-          //console.log(brushSpec.type);
-          ///// The whole filtering (brushing) logic /////
-          if (brushSpec.type == REGULAR) {
-            for (var dim in brushSpec.b) {
+      // Add gray foreground lines; thickness in css.
+      unfocused = svg.append("g")
+        .attr("class", "unfocused")
+        .selectAll("path")
+        .data(data)
+        .enter().append("path")
+        .attr("d", path);
 
-              if (!selectedDimensions.includes(dim)) continue;
-              if (brushSpec.b[dim] == undefined || brushSpec.b[dim] == -1) continue;
-              if (brushSpec.b[dim][0] > p[dim] || p[dim] > brushSpec.b[dim][1]) return false;
+        // IMPORTANT: should not include 'dimensionSpec.changed = false;' here,
+        // the next if-body takes care of it
+    }
+
+    if(dimensionSpec.changed || brushSpec.changed){
+      svg.selectAll("g.focused").remove();
+
+      // Add blue focused foreground lines; thickness in css.
+      focused = svg.append("g") // can we make the text always on top?
+      // also a better solution could be to change the css class
+      // of certain elements from foreground to focused
+        .attr("class", "focused")
+        .selectAll("path")
+        .data(data
+          .filter(function (p) {
+            ///// The whole filtering (brushing) logic /////
+            if (brushSpec.type == REGULAR) {
+              for (var dim in brushSpec.b) {
+
+                if (!selectedDimensions.includes(dim)) continue;
+                if (brushSpec.b[dim] == undefined || brushSpec.b[dim] == -1) continue;
+                if (brushSpec.b[dim][0] > p[dim] || p[dim] > brushSpec.b[dim][1]) return false;
+              }
+              return true;
+            } else if (brushSpec.type == ANGULAR) {
+              var d1 = brushSpec.angular.dim1;
+              var d2 = brushSpec.angular.dim2;
+              var frm = brushSpec.angular.frm;
+              var to = brushSpec.angular.to;
+              var dif = p[d1] - p[d2];
+              return (frm <= dif && dif <= to);
             }
-            return true;
-          } else if (brushSpec.type == ANGULAR) {
-            var d1 = brushSpec.angular.dim1;
-            var d2 = brushSpec.angular.dim2;
-            var frm = brushSpec.angular.frm;
-            var to = brushSpec.angular.to;
-            var dif = p[d1] - p[d2];
-            return (frm <= dif && dif <= to);
-          }
-          return true; // No filter applied
+            return true; // No filter applied
+          })
+        )
+        .enter().append("path")
+        .attr("d", path);
+
+
+      // redrawing here only to prevent elements from hiding eeach others
+      svg.selectAll("g.dimension").remove();
+      svg.selectAll("g.axis").remove();
+      svg.selectAll("text").remove();
+
+      // Add a group elements for each dimension.
+      g = svg.selectAll(".dimension")
+        .data(selectedDimensions)
+        .enter().append("g")
+        .attr("class", "dimension")
+        .attr("id", function (d, i) {
+          return d.slice(0, 2);
         })
-      )
-      .enter().append("path")
-      .attr("d", path);
+      // Add an axis and title; d3 v4 requires filling the title.
+      a = g.append("g")
+        .attr("class", "axis")
+        .each(function (d) {
+          d3.select(this)
+            .call(
+              axis.scale(y[d])
+                .tickSize("1.5")
+                .tickPadding("1.5")
+            );
+        })
+        .append("text")
+        .attr("class", "title")
+        .attr("fill", "black")
+        .style("text-anchor", "middle")
+        .attr("y", titley)
+        .text(function (d) {
+          return d;
+        });
+
+      fontSize = vbh / 30; // set font size to 1/30 th of height??
+
+      svg.selectAll(".axis")
+        .attr("font-size", fontSize)
+        .attr("stroke-width", dW);
+
+      dimensionSpec.changed = false;
+      brushSpec.changed = false;
+    }
+
 
     var anchort = "start", brp;
     if (widthpx > mediumpx) {
@@ -269,7 +290,7 @@ function respParcoords(data, options) {
     g.attr("transform", function (d) {
       if (x(d)) return "translate(" + x(d) + ")";
     });
-    foreground.attr("d", path);
+    unfocused.attr("d", path);
     focused.attr("d", path);
     a.style("text-anchor", anchort);
     a.attr("transform", "rotate(" + anglet + ")");
@@ -316,18 +337,20 @@ function respParcoords(data, options) {
     g.attr("transform", function (d) {
       if (x(d)) return "translate(" + x(d) + ")";
     })
-    foreground.attr("d", path);
+    unfocused.attr("d", path);
     focused.attr("d", path);
   }
 
 
   function showDimension(dimension) {
     selectedDimensions.append(dimension);
+    dimensionSpec.changed = true;
     plot();
   }
 
   function hideDimension(dimension) {
     selectedDimensions.remove(dimension);
+    dimensionSpec.changed = true;
     plot();
   }
 
@@ -336,6 +359,7 @@ function respParcoords(data, options) {
     brushSpec.type = REGULAR;
     for (var i in dims)
       brushSpec.b[i] = [frm[i], to[i]];
+    brushSpec.changed = true;
     plot();
   }
 
@@ -344,6 +368,7 @@ function respParcoords(data, options) {
     brushSpec.type = ANGULAR;
     brushSpec.angular.dim = [dim1, dim2];
     brushSpec.angular.range = [frm, to];
+    brushSpec.changed = true;
     plot();
   }
 
@@ -351,6 +376,7 @@ function respParcoords(data, options) {
     for (var i in brushSpec.b)
       brushSpec.b[i] = -1;
     brushSpec.type = NONE;
+    brushSpec.changed = true;
     plot();
   }
 

@@ -90,7 +90,7 @@ li{list-style-type: none; margin-left: 0; font-size: 0.625em;}
   stroke-width: 0.1;
 }
 
-.foreground path {
+.unfocused path {
   fill: none;
   stroke: grey;
   stroke-width: 0.1;
