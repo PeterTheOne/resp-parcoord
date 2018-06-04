@@ -150,3 +150,12 @@ li{list-style-type: none; margin-left: 0; font-size: 0.625em;}
     cursor: pointer;
 }
 
+// should edit
+li.chosen {
+  color: red;
+}
+
+// should edit
+li.unchosen {
+  color: grey;
+}

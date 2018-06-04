@@ -23,6 +23,7 @@ function respParcoords(data, options) {
   var angStep = -45; // rotation step
   var margin = {top: 20, right: 30, bottom: 5, left: 2};
   var axis;
+  var dimensionsMenu;
 
   var NONE = "NONE", ANGULAR = "ANGULAR", REGULAR = "REGULAR";
   // specifies the brushing information
@@ -91,6 +92,34 @@ function respParcoords(data, options) {
     );
     dimensions = selectedDimensions;
 
+    d3.select("body")
+      .append("ul")
+      .attr("id","dimensionsMenu");
+    dimensionsMenu = d3.select("#dimensionsMenu");
+    dimensionsMenu.selectAll(".chosen")
+      .data(dimensions)
+      .enter()
+      .append("li")
+      .text(function(d){return d;})
+      .attr("class","chosen")
+      .attr("id",function(d){return d;})
+      .on("click",function(d){
+        console.log(d);
+        dimensionSpec.hard = true;
+        if(selectedDimensions.includes(d)){
+          selectedDimensions.splice(selectedDimensions.indexOf(d),1);
+        } else {
+          selectedDimensions.push(d);
+        }
+        plot();
+
+      });
+    // dimensionsMenu.enter()
+    //   .data(dimensions)
+    //   .enter()
+    //     .append("li")
+    //     .text(function(d){return d;})
+    //     .attr("class","chosen");
     g = svg.selectAll(".dimension");
     plot();
   }
@@ -154,8 +183,6 @@ function respParcoords(data, options) {
             }
           }
         }
-        x.domain(selectedDimensions);
-        g.data(selectedDimensions);
 
         /*if (numberSegementsShown<dim){ // show or hide 'Dimensions' button
           document.getElementById("btn").removeAttribute("class");
@@ -167,8 +194,12 @@ function respParcoords(data, options) {
       }
     } else { // if dimensions are chosen
       // TODO override whatever 'show(element)' method does
+      // IMPORTANT: if #selected dimensions < 2 add until you get 2, and maybe alert
     }
 
+    x.domain(selectedDimensions);
+    g.data(selectedDimensions);
+    showMenu();
 
     /// snippet only for testing regular brush ////
     brushSpec.type = REGULAR;
@@ -235,7 +266,7 @@ function respParcoords(data, options) {
         .attr("d", path);
 
 
-      // redrawing here only to prevent elements from hiding eeach others
+      // redrawing here only to prevent elements from hiding each others
       svg.selectAll("g.dimension").remove();
       svg.selectAll("g.axis").remove();
       svg.selectAll("text").remove();
@@ -302,6 +333,12 @@ function respParcoords(data, options) {
     a.attr("dx", dxt);
   }
 
+  function showMenu(){
+    dimensionsMenu.selectAll("li")
+    .attr("class",function(d){
+      return selectedDimensions.includes(d) ? "chosen" : "unchosen";
+    });
+  }
 
   function show(element) {
     variable = [];
