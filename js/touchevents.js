@@ -10,6 +10,8 @@ var ongoingTouches = [];
 
 function handleTouches(evt) {
 	evt.preventDefault();
+	evt.returnValue = false;
+
 	updateTouches(evt.changedTouches);
  	printOngoingTouches();
 	calculateAngles();
@@ -18,6 +20,8 @@ function handleTouches(evt) {
 
 function handleMove(evt) {
 	evt.preventDefault();
+	evt.returnValue = false;
+
 	updateTouches(evt.changedTouches);
 	printOngoingTouches();
 	calculateAngles();
@@ -26,6 +30,8 @@ function handleMove(evt) {
 
 function handleEnded(evt) {
 	evt.preventDefault();
+	evt.returnValue = false;
+
 	removeTouches(evt.changedTouches);
 	printOngoingTouches();
 }
