@@ -150,12 +150,21 @@ li{list-style-type: none; margin-left: 0; font-size: 0.625em;}
     cursor: pointer;
 }
 
-// should edit
+/* should edit */
 li.chosen {
-  color: red;
+    color: red;
 }
 
-// should edit
+/* should edit */
 li.unchosen {
-  color: grey;
+    color: grey;
+}
+
+/* touch events */
+.dot {
+    height: 20px;
+    width: 20px;
+    background-color: #F90;
+    display: block;
+    position: absolute;
 }
