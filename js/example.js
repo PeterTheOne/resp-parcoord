@@ -3,8 +3,10 @@
 const csvDataPath = 'data/cars.json';
 const jsonDataPath = 'data/cars.json';
 
+// todo: there should be defaults for these options in respParcoords
 const options = {
   svgSelector: '#chart',
+  minSegmentSize: 40
 };
 
 async function init() {

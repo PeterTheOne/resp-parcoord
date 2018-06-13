@@ -7,7 +7,6 @@ function respParcoords(data, options) {
   const myChks = myAxes.map(value => 'chk_' + value);
   const numberDimensions = myAxes.length; //number of used properties
 
-  const minSegmentSize = 40; // minimal default size of a segment;
   var svg, g, line;
   var unfocused;
   var focused;
@@ -166,7 +165,7 @@ function respParcoords(data, options) {
 
     // Automatic adjustment of the number of segments.
     if (!dimensionSpec.hard) { // soft adjustment
-      var numberSegementsShown = Math.floor(width / minSegmentSize);
+      var numberSegementsShown = Math.floor(width / options.minSegmentSize);
       if (numberSegementsShown < 2) numberSegementsShown = 2;
       if (numberSegementsShown > numberDimensions) numberSegementsShown = numberDimensions;
       if(selectedDimensions.length != numberSegementsShown){ // if it's the same number, don't change
