@@ -87,6 +87,7 @@ function respParcoords(data, options) {
       .append("g")
       .attr("transform", "translate(" + 0 + "," + options.margin.top + ")");
 
+    // Axis
     x = d3.scalePoint().range([options.margin.left, width - options.margin.right]);
     y = {};
     dragging = {};
@@ -107,6 +108,7 @@ function respParcoords(data, options) {
     x.domain(selectedDimensions);
     dimensions = selectedDimensions;
 
+    // dimensionsMenu
     d3.select("body")
       .append("ul")
       .attr("id","dimensionsMenu");
@@ -291,16 +293,16 @@ function respParcoords(data, options) {
         .data(selectedDimensions)
         .enter().append("g")
         .attr("class", "dimension")
-        .attr("id", function (d, i) {
-          return d;
+        .attr("id", function (data, i) {
+          return data;
         });
       // Add an axis and title; d3 v4 requires filling the title.
       a = g.append("g")
         .attr("class", "axis")
-        .each(function (d) {
+        .each(function (data) {
           d3.select(this)
             .call(
-              axis.scale(y[d])
+              axis.scale(y[data])
                 .tickSize("1.5")
                 .tickPadding("1.5")
             );
@@ -310,8 +312,8 @@ function respParcoords(data, options) {
         .attr("fill", "black")
         .style("text-anchor", "middle")
         .attr("y", options.titley)
-        .text(function (d) {
-          return d;
+        .text(function (data) {
+          return data;
         });
 
       fontSize = vbh / 30; // set font size to 1/30 th of height??
