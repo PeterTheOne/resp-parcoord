@@ -19,8 +19,6 @@ function respParcoords(data, options) {
     angStep: -45,  // rotation step
   };
   options = Object.assign(optionsDefault, options);
-  console.log(options);
-
 
   //arrays of ids for axes and checkbuttons
   let myAxes = Object.keys(data[0]);
@@ -74,6 +72,14 @@ function respParcoords(data, options) {
   plot();
   d3.select(window).on('resize', plot);
 
+  // touches test
+  d3.select('svg').on('touchstart', handleTouches);
+  d3.select('svg').on('touchmove', handleTouches);
+  function handleTouches() {
+    const touches = d3.touches(this);
+    console.log(touches)
+  }
+
   function init(bp1, bp2) {
     breakpoint = [bp1, bp2];
 
@@ -119,7 +125,7 @@ function respParcoords(data, options) {
       .attr("class","chosen")
       .attr("id",function(d){return d;})
       .on("click",function(d){
-        console.log(d);
+        //console.log(d);
         dimensionSpec.hard = true;
         if(selectedDimensions.includes(d)){
           selectedDimensions.splice(selectedDimensions.indexOf(d),1);
@@ -221,12 +227,12 @@ function respParcoords(data, options) {
     brushSpec.changed = true;
     var lb1 = Math.floor(Math.random() * 4) + 3;
     var ub1 = Math.floor(Math.random() * 4) + 5;
-    console.log(lb1 + " " + ub1);
+    //console.log(lb1 + " " + ub1);
     brushSpec.b.cylinders = [lb1, ub1];
 
     var lb2 = Math.floor(Math.random() * 100) + 1;
     var ub2 = Math.floor(Math.random() * 100) + 100;
-    console.log(lb2 + " " + ub2);
+    //console.log(lb2 + " " + ub2);
     brushSpec.b.power = [lb2, ub2];
 
     /// END OF IT ////
