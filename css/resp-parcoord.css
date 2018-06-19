@@ -30,6 +30,7 @@ tr:nth-child(odd) {
 
 svg {
   font: 1em Verdana;
+  touch-action: none;
 }
 
 ul{margin: 0; padding: 0;}
