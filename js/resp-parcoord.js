@@ -27,14 +27,15 @@ function respParcoords(data, options) {
   const myChks = myAxes.map(value => 'chk_' + value);
   const numberDimensions = myAxes.length; //number of used properties
 
-  var svg, g, line;
+  let svg = d3.select(options.svgSelector);
+  let svgTranslated, g, line;
   var unfocused;
   var focused;
   var x, y;
   var selectedDimensions;
   var dimensions;
   var variable = [];
-  var breakpoint = [];
+  const breakpoints = [options.breakpoint1, options.breakpoint2];
   var dragging;
   var axis;
   var dimensionsMenu;
@@ -69,48 +70,40 @@ function respParcoords(data, options) {
   let height = vbh - vbmy;
   let fontSize = vbh / 30; // set font size to 1/30 th of height??
 
-  init(options.breakpoint1, options.breakpoint2);
+  init();
   plot();
   d3.select(window).on('resize', plot);
 
   // touches test
-  d3.select('svg').on('touchstart', handleTouches);
-  d3.select('svg').on('touchmove', handleTouches);
+  svg.on('touchstart', handleTouches);
+  svg.on('touchmove', handleTouches);
   function handleTouches() {
     const touches = d3.touches(this);
     console.log(touches)
   }
 
-  function init(bp1, bp2) {
-    breakpoint = [bp1, bp2];
-
-    var inv = [];
-
-    d3.select("svg").attr("viewBox", vbr);
+  function init() {
+    svgTranslated = svg.attr("viewBox", vbr)
+      .append("g")
+      .attr("transform", "translate(" + 0 + "," + options.margin.top + ")");
 
     x = d3.scalePoint().range([options.margin.left, width - options.margin.right]);
     y = {};
     dragging = {};
     line = d3.line();
     axis = d3.axisLeft();
-    // chart setting
-    svg = d3.select(options.svgSelector)
-      .append("g")
-      .attr("transform", "translate(" + 0 + "," + options.margin.top + ")");
 
     // Extract the list of dimensions and create a scale for each.
-    selectedDimensions = d3.keys(data[0])
-      .filter(function (dimension) {
-        if (options.ignoreDimensions.includes(dimension)) {
-          return false;
-        }
-        return (y[dimension] = d3.scaleLinear()
-            .domain(d3.extent(data, function (p) {
-                return +p[dimension];
-              }))
-            .range([height - options.margin.top - options.dy, options.margin.bottom])
-        );
-      })
+    selectedDimensions = d3.keys(data[0]).filter(function (dimension) {
+      return !options.ignoreDimensions.includes(dimension);
+    });
+    selectedDimensions.forEach(function(dimension) {
+      y[dimension] = d3.scaleLinear()
+        .domain(d3.extent(data, function (p) {
+          return +p[dimension];
+        }))
+        .range([height - options.margin.top - options.dy, options.margin.bottom]);
+    });
     x.domain(selectedDimensions);
     dimensions = selectedDimensions;
 
@@ -142,7 +135,7 @@ function respParcoords(data, options) {
     //     .append("li")
     //     .text(function(d){return d;})
     //     .attr("class","chosen");
-    g = svg.selectAll(".dimension");
+    g = svgTranslated.selectAll(".dimension");
     plot();
   }
 
@@ -181,11 +174,11 @@ function respParcoords(data, options) {
     width = vbw - 0;
     height = vbh - 0;
 
-    d3.select("svg").attr("viewBox", vbr);
+    svg.attr("viewBox", vbr);
 
     // Set breakpoints in pixels.
-    var narrowpx = parseFloat(breakpoint[0]) * getBaseFontSize();
-    var mediumpx = parseFloat(breakpoint[1]) * getBaseFontSize();
+    var narrowpx = parseFloat(breakpoints[0]) * getBaseFontSize();
+    var mediumpx = parseFloat(breakpoints[1]) * getBaseFontSize();
 
     // Automatic adjustment of the number of segments.
     if (!dimensionSpec.hard) { // soft adjustment
@@ -239,10 +232,10 @@ function respParcoords(data, options) {
     /// END OF IT ////
 
     if(dimensionSpec.changed){ // replot unfocused stuff
-      svg.selectAll("g.unfocused").remove();
+      svgTranslated.selectAll("g.unfocused").remove();
 
       // Add gray foreground lines; thickness in css.
-      unfocused = svg.append("g")
+      unfocused = svgTranslated.append("g")
         .attr("class", "unfocused")
         .selectAll("path")
         .data(data)
@@ -254,10 +247,10 @@ function respParcoords(data, options) {
     }
 
     if(dimensionSpec.changed || brushSpec.changed){
-      svg.selectAll("g.focused").remove();
+      svgTranslated.selectAll("g.focused").remove();
 
       // Add blue focused foreground lines; thickness in css.
-      focused = svg.append("g") // can we make the text always on top?
+      focused = svgTranslated.append("g") // can we make the text always on top?
       // also a better solution could be to change the css class
       // of certain elements from foreground to focused
         .attr("class", "focused")
@@ -289,12 +282,12 @@ function respParcoords(data, options) {
 
 
       // redrawing here only to prevent elements from hiding each others
-      svg.selectAll("g.dimension").remove();
-      svg.selectAll("g.axis").remove();
-      svg.selectAll("text").remove();
+      svgTranslated.selectAll("g.dimension").remove();
+      svgTranslated.selectAll("g.axis").remove();
+      svgTranslated.selectAll("text").remove();
 
       // Add a group elements for each dimension.
-      g = svg.selectAll(".dimension")
+      g = svgTranslated.selectAll(".dimension")
         .data(selectedDimensions)
         .enter().append("g")
         .attr("class", "dimension")
@@ -323,7 +316,7 @@ function respParcoords(data, options) {
 
       fontSize = vbh / 30; // set font size to 1/30 th of height??
 
-      svg.selectAll(".axis")
+      svgTranslated.selectAll(".axis")
         .attr("font-size", fontSize)
         .attr("stroke-width", options.dW);
 
@@ -392,8 +385,8 @@ function respParcoords(data, options) {
     });
     x.domain(selectedDimensions);
 
-    var widthpx = parseInt(d3.select(options.svgSelector).style("width")),
-      heightpx = parseInt(d3.select(options.svgSelector).style("height"));
+    var widthpx = parseInt(svg.style("width")),
+      heightpx = parseInt(svg.style("height"));
     var width = (widthpx / heightpx * 100);
 
     x.range([options.margin.left, width - options.margin.right], 2);
