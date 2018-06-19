@@ -1,6 +1,27 @@
 'use strict';
 
 function respParcoords(data, options) {
+  const optionsDefault = {
+    svgSelector: '#chart',
+    minSegmentSize: 40,
+    breakpoint1: '35em',
+    breakpoint2: '50em',
+    margin: {
+      top: 20,
+      right: 30,
+      bottom: 5,
+      left: 2
+    },
+    dy: 2, // displacement for top margin
+    dW: 0.5, // stroke width and displacement
+    titley: 2.5,  //displacement for axes titles
+    titleStep: -1.5,
+    angStep: -45,  // rotation step
+  };
+  options = Object.assign(optionsDefault, options);
+  console.log(options);
+
+
   //arrays of ids for axes and checkbuttons
   let myAxes = Object.keys(data[0]);
   myAxes.splice(0, 1); // remove name column
@@ -16,10 +37,6 @@ function respParcoords(data, options) {
   var variable = [];
   var breakpoint = [];
   var dragging;
-  var dy = 2, dW = 0.5; //displacement for top margin; stroke width and displacement
-  var titley = 2.5, titleStep = -1.5; //displacement for axes titles
-  var angStep = -45; // rotation step
-  var margin = {top: 20, right: 30, bottom: 5, left: 2};
   var axis;
   var dimensionsMenu;
 
@@ -53,7 +70,7 @@ function respParcoords(data, options) {
   let height = vbh - vbmy;
   let fontSize = vbh / 30; // set font size to 1/30 th of height??
 
-  init("35em", "50em");
+  init(options.breakpoint1, options.breakpoint2);
   plot();
   d3.select(window).on('resize', plot);
 
@@ -64,7 +81,7 @@ function respParcoords(data, options) {
 
     d3.select("svg").attr("viewBox", vbr);
 
-    x = d3.scalePoint().range([margin.left, width - margin.right]);
+    x = d3.scalePoint().range([options.margin.left, width - options.margin.right]);
     y = {};
     dragging = {};
     line = d3.line();
@@ -72,7 +89,7 @@ function respParcoords(data, options) {
     // chart setting
     svg = d3.select(options.svgSelector)
       .append("g")
-      .attr("transform", "translate(" + 0 + "," + margin.top + ")");
+      .attr("transform", "translate(" + 0 + "," + options.margin.top + ")");
 
     // Extract the list of dimensions and create a scale for each.
     selectedDimensions = "";
@@ -84,7 +101,7 @@ function respParcoords(data, options) {
                 , function (p) {
                   return +p[d];
                 }))
-              .range([height - margin.top - dy, margin.bottom])
+              .range([height - options.margin.top - options.dy, options.margin.bottom])
           );
       })
     );
@@ -128,7 +145,7 @@ function respParcoords(data, options) {
     return line(
       selectedDimensions
         .map(function (p) {
-          return [position(p) + dW, y[p](d[p]) + dW];
+          return [position(p) + options.dW, y[p](d[p]) + options.dW];
         })
     );
   }
@@ -292,7 +309,7 @@ function respParcoords(data, options) {
         .attr("class", "title")
         .attr("fill", "black")
         .style("text-anchor", "middle")
-        .attr("y", titley)
+        .attr("y", options.titley)
         .text(function (d) {
           return d;
         });
@@ -301,7 +318,7 @@ function respParcoords(data, options) {
 
       svg.selectAll(".axis")
         .attr("font-size", fontSize)
-        .attr("stroke-width", dW);
+        .attr("stroke-width", options.dW);
 
       dimensionSpec.changed = false;
       brushSpec.changed = false;
@@ -315,11 +332,11 @@ function respParcoords(data, options) {
     }
     else if (widthpx > narrowpx) brp = 1;
     else brp = 2;
-    var anglet = brp * angStep; // rotating the text
-    var dxt = brp * (titleStep);
-    var dyt = brp * (titleStep);
+    var anglet = brp * options.angStep; // rotating the text
+    var dxt = brp * (options.titleStep);
+    var dyt = brp * (options.titleStep);
 
-    x.range([margin.left, width - margin.right]);
+    x.range([options.margin.left, width - options.margin.right]);
     g.attr("transform", function (d) {
       if (x(d)) return "translate(" + x(d) + ")";
     });
@@ -372,7 +389,7 @@ function respParcoords(data, options) {
       heightpx = parseInt(d3.select(options.svgSelector).style("height"));
     var width = (widthpx / heightpx * 100);
 
-    x.range([margin.left, width - margin.right], 2);
+    x.range([options.margin.left, width - options.margin.right], 2);
     g.attr("transform", function (d) {
       if (x(d)) return "translate(" + x(d) + ")";
     })
