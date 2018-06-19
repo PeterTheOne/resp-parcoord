@@ -5,6 +5,9 @@ const jsonDataPath = 'data/cars.json';
 
 const options = {
   // none, means that defaults are used.
+  ignoreDimensions: [
+    'name'
+  ]
 };
 
 async function init() {

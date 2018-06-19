@@ -17,6 +17,7 @@ function respParcoords(data, options) {
     titley: 2.5,  //displacement for axes titles
     titleStep: -1.5,
     angStep: -45,  // rotation step
+    ignoreDimensions: []
   };
   options = Object.assign(optionsDefault, options);
 
@@ -98,19 +99,19 @@ function respParcoords(data, options) {
       .attr("transform", "translate(" + 0 + "," + options.margin.top + ")");
 
     // Extract the list of dimensions and create a scale for each.
-    selectedDimensions = "";
-    x.domain(selectedDimensions = d3.keys(data[0])
-      .filter(function (d) {
-        return (d != "name" && d != "0-60 mph (s)") && // TODO should not be hardcoded
-          (y[d] = d3.scaleLinear()
-              .domain(d3.extent(data
-                , function (p) {
-                  return +p[d];
-                }))
-              .range([height - options.margin.top - options.dy, options.margin.bottom])
-          );
+    selectedDimensions = d3.keys(data[0])
+      .filter(function (dimension) {
+        if (options.ignoreDimensions.includes(dimension)) {
+          return false;
+        }
+        return (y[dimension] = d3.scaleLinear()
+            .domain(d3.extent(data, function (p) {
+                return +p[dimension];
+              }))
+            .range([height - options.margin.top - options.dy, options.margin.bottom])
+        );
       })
-    );
+    x.domain(selectedDimensions);
     dimensions = selectedDimensions;
 
     d3.select("body")
