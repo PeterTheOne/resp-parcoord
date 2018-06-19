@@ -71,15 +71,15 @@ function removeTouches(touches) {
 function printOngoingTouches() {
 	document.getElementById("touches_field").innerHTML = "";
 	for (var i = 0; i < ongoingTouches.length; i++) {
-		document.getElementById("touches_field").innerHTML += ongoingTouches[i].screenX + "/" + ongoingTouches[i].screenY + " ";
+		document.getElementById("touches_field").innerHTML += ongoingTouches[i].pageX + "/" + ongoingTouches[i].pageY + " ";
 	}
 }
 
 function updateDots() {
 	for (var i = 0; i < ongoingTouches.length; i++) {
 		var name = "dot_" + (i + 1);
-		document.getElementById(name).style["top"] = ongoingTouches[i].screenY + "px";
-		document.getElementById(name).style["left"] = ongoingTouches[i].screenX + "px";
+		document.getElementById(name).style["top"] = ongoingTouches[i].pageY - 10 + "px";
+		document.getElementById(name).style["left"] = ongoingTouches[i].pageX - 10 + "px";
 	}
 }
 
@@ -88,7 +88,7 @@ function calculateAngles() {
 		var touchA = ongoingTouches[0];
 		var touchB = ongoingTouches[1];
 
-		if (touchA.screenX < touchB.screenX) {
+		if (touchA.pageX < touchB.pageX) {
 			document.getElementById("angle_1").innerHTML = calculateAngle(touchA, touchB);
 		} else {
 			document.getElementById("angle_1").innerHTML = calculateAngle(touchB, touchA);
@@ -97,7 +97,7 @@ function calculateAngles() {
 }
 
 function calculateAngle(touchA, touchB) {
-	return -Math.atan2(touchB.screenY - touchA.screenY, touchB.screenX - touchA.screenX) * 180 / Math.PI;
+	return -Math.atan2(touchB.pageY - touchA.pageY, touchB.pageX - touchA.pageX) * 180 / Math.PI;
 }
 
 
