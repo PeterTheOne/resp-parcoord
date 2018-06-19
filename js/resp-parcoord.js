@@ -55,14 +55,18 @@ function respParcoords(data, options) {
   // specifies which dimensions are shown, inverted, ...
   var dimensionSpec = {
     hard : false,
-    changed : true
+    changed : true,
     // selectedDimensions : [],
-    // inverted : []
+    inverted : []
+  };
+
+  var rangeInfo = {
+  	frmX:0,toX:0,frmY:0,toY:0
   };
 
   let a;
 
-  let vbmx = 0, vbmy = 0, vbw = 100, vbh = 100;
+  let vbmx = 0, vbmy = 0, vbw = 80, vbh = 80;
   let vbr = vbmx + " " + vbmy + " " + vbw + " " + vbh;
   let width = vbw - vbmx;
   let height = vbh - vbmy;
@@ -75,10 +79,7 @@ function respParcoords(data, options) {
   // touches test
   d3.select('svg').on('touchstart', handleTouches);
   d3.select('svg').on('touchmove', handleTouches);
-  function handleTouches() {
-    const touches = d3.touches(this);
-    console.log(touches)
-  }
+
 
   function init(bp1, bp2) {
     breakpoint = [bp1, bp2];
@@ -174,8 +175,8 @@ function respParcoords(data, options) {
       heightpx = parseInt(d3.select(options.svgSelector).style("height"));
 
     vbmx = -15, vbmy = 0;
-    vbw = (widthpx / heightpx * 100);
-    vbh = 100;
+    vbw = (widthpx / heightpx * 80);
+    vbh = 80;
     vbr = vbmx + " " + vbmy + " " + vbw + " " + vbh;
     width = vbw - 0;
     height = vbh - 0;
@@ -223,17 +224,17 @@ function respParcoords(data, options) {
     showMenu();
 
     /// snippet only for testing regular brush ////
-    brushSpec.type = REGULAR;
-    brushSpec.changed = true;
-    var lb1 = Math.floor(Math.random() * 4) + 3;
-    var ub1 = Math.floor(Math.random() * 4) + 5;
-    //console.log(lb1 + " " + ub1);
-    brushSpec.b.cylinders = [lb1, ub1];
+    // brushSpec.type = REGULAR;
+    // brushSpec.changed = true;
+    // var lb1 = Math.floor(Math.random() * 4) + 3;
+    // var ub1 = Math.floor(Math.random() * 4) + 5;
+    // //console.log(lb1 + " " + ub1);
+    // brushSpec.b.cylinders = [lb1, ub1];
 
-    var lb2 = Math.floor(Math.random() * 100) + 1;
-    var ub2 = Math.floor(Math.random() * 100) + 100;
-    //console.log(lb2 + " " + ub2);
-    brushSpec.b.power = [lb2, ub2];
+    // var lb2 = Math.floor(Math.random() * 100) + 1;
+    // var ub2 = Math.floor(Math.random() * 100) + 100;
+    // //console.log(lb2 + " " + ub2);
+    // brushSpec.b.power = [lb2, ub2];
 
     /// END OF IT ////
 
@@ -328,6 +329,22 @@ function respParcoords(data, options) {
 
       dimensionSpec.changed = false;
       brushSpec.changed = false;
+      var yRange;
+      d3.selectAll(".domain")
+      	.each(function(){
+      		var bbox = this.getBBox();
+      		// var bbox = this.getBoundingClientRect();
+      		var frm = bbox.y;
+      		var to = frm + bbox.height;
+      		yRange = [frm,to];
+      		// yRange = [frm, to];
+      		// document.getElementById("log_container").innerHTML = JSON.stringify(bbox);
+      		// console.log(bbox);
+      	});
+     document.getElementById("log_container").innerHTML = "" + yRange;
+     //svg.append('rect').attrs({ x: yRange[0], y: yRange[1], width: 1, height: 1, fill: 'red' });
+
+      //console.log(yRange);
     }
 
 
@@ -352,6 +369,76 @@ function respParcoords(data, options) {
     a.attr("transform", "rotate(" + anglet + ")");
     a.attr("dy", dyt);
     a.attr("dx", dxt);
+
+    d3.selectAll(".unfocused")
+		.each(function(){
+      		var bbox = this.getBBox();
+			rangeInfo.frmX = bbox.x;
+			rangeInfo.toX = bbox.x + bbox.width;
+		});
+	d3.selectAll(".domain")
+		.each(function(){
+      		var bbox = this.getBBox();
+			rangeInfo.frmY = options.margin.top + bbox.y;
+			rangeInfo.toY = options.margin.top + bbox.y + bbox.height;
+		});
+	console.log(rangeInfo);
+    
+  }
+
+  function handleTouches() {
+    const touches = d3.touches(this);
+    document.getElementById("touches_field").innerHTML = "";
+	for (var i = 0; i < touches.length; i++) {
+		document.getElementById("touches_field").innerHTML += touches[i][0]+ "/" + touches[i][1] + "</br>";
+	}
+    console.log(touches);
+    if(touches.length == 2){
+    	handleSinleBrush(touches);
+    }
+  }
+
+  function handleSinleBrush(touches){
+  	// which dimension? take one touch and select the closest dimension to it
+  	var x = touches[0][0];
+  	x = Math.min(rangeInfo.toX,Math.max(rangeInfo.frmX,x));
+  	document.getElementById("touches_field").innerHTML += x ;
+  	var xMapper = d3.scaleLinear()
+	  	.domain([rangeInfo.frmX,rangeInfo.toX])
+	  	.range([0,selectedDimensions.length-1]);
+  	var dimensionIdx = Math.round(xMapper(x));
+	var dim = selectedDimensions[dimensionIdx];
+
+  	// what is the range?
+  	// document.getElementById("touches_field").innerHTML += "</br>";
+  	var y = [touches[0][1],touches[1][1]];
+  	// document.getElementById("touches_field").innerHTML +=y+"</br>";
+  	var rng= getRange(dim);
+  	// document.getElementById("touches_field").innerHTML +=rng+"</br>";
+  	var yMapper = d3.scaleLinear()
+	  	.domain([rangeInfo.frmY,rangeInfo.toY])
+	  	.range(rng);
+  	for(let i in y){
+	  	y[i] = Math.min(rangeInfo.toY,Math.max(rangeInfo.frmY,y[i]));
+	  	y[i] = yMapper(y[i]);
+  	}
+  	y.sort();
+  	document.getElementById("touches_field").innerHTML += "</br>" + y;
+  	brush([dim],[y[0]],[y[1]]);
+  }
+
+  function getRange(dim){ // TODO can be much more elegant... preprocessing
+  	var min = data[1][dim],max=data[1][dim];
+  	// document.getElementById("touches_field").innerHTML += " " + min + " " + max;
+  	for(let i in data) if(i > 0){ // skip the titles
+  		min = Math.min(min,data[i][dim]);
+  		max = Math.max(max,data[i][dim]);
+  	}
+  	if(dimensionSpec.inverted[dim])
+  		return [min,max];
+  	else 
+  		return [max,min];
+
   }
 
   function showMenu(){
@@ -360,49 +447,6 @@ function respParcoords(data, options) {
       return selectedDimensions.includes(d) ? "chosen" : "unchosen";
     });
   }
-
-  function show(element) {
-    variable = [];
-    let ids = '#' + element.id;
-    if (element.checked) {
-      for (let i in myChks) {
-        if (myChks[i] == element.id) {
-          document.getElementById(myAxes[i]).removeAttribute("style");
-          hid[myAxes[i]] = 0;
-        }
-      }
-    }
-    else {
-      for (let i in myChks) {
-        if (myChks[i] == element.id) {
-          d3.select("#" + myAxes[i]).style("display", "none");
-          hid[myAxes[i]] = 1;
-        }
-      }
-    }
-
-    for (let i = 0; i < myChks.length; i++) {
-      var elt = document.getElementById(myChks[i]);
-      //if (elt.checked) {variable.push(elt.value);}
-      variable.push(elt.value);
-    }
-    selectedDimensions = dimensions.filter(function (d, i) {
-      if (variable.indexOf(d) > -1) return d;
-    });
-    x.domain(selectedDimensions);
-
-    var widthpx = parseInt(d3.select(options.svgSelector).style("width")),
-      heightpx = parseInt(d3.select(options.svgSelector).style("height"));
-    var width = (widthpx / heightpx * 100);
-
-    x.range([options.margin.left, width - options.margin.right], 2);
-    g.attr("transform", function (d) {
-      if (x(d)) return "translate(" + x(d) + ")";
-    })
-    unfocused.attr("d", path);
-    focused.attr("d", path);
-  }
-
 
   function showDimension(dimension) {
     selectedDimensions.append(dimension);
@@ -420,8 +464,9 @@ function respParcoords(data, options) {
     clearBrush();
     brushSpec.type = REGULAR;
     for (var i in dims)
-      brushSpec.b[i] = [frm[i], to[i]];
+      brushSpec.b[dims[i]] = [frm[i], to[i]];
     brushSpec.changed = true;
+  	document.getElementById("touches_field").innerHTML += "</br>" + JSON.stringify(brushSpec);
     plot();
   }
 
