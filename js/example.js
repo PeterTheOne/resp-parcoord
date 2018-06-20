@@ -14,9 +14,6 @@ async function init() {
   //const data = await d3.csv(csvDataPath);
   const data = await d3.json(jsonDataPath);
   respParcoords(data, options);
-
-  // touchevents
-  //startup()
 }
 
 // wait until website is loaded
