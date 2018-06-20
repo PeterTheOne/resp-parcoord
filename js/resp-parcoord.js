@@ -580,7 +580,8 @@ function respParcoords(data, options) {
   	x1 : undefined,
   	y1 : undefined,
   	x2 : undefined,
-  	y2 : undefined
+  	y2 : undefined,
+  	box : undefined
   };
   function bboxStart(){
   	handleTouches(this);
@@ -589,6 +590,12 @@ function respParcoords(data, options) {
     bboxSpec.start = true;
     bboxSpec.x1 = touches[0][0];
     bboxSpec.y1 = touches[0][1];
+    bboxSpec.box = svg.append("rect")
+    				.attr("id","bboxSelection")
+    				.attr("x", bboxSpec.x1)
+                    .attr("y", bboxSpec.y1)
+                    .attr("width", 0)
+                    .attr("height", 0);
   }
   function bboxMove(){
   	handleTouches(this);
@@ -600,20 +607,26 @@ function respParcoords(data, options) {
     }
     bboxSpec.x2 = touches[0][0];
     bboxSpec.y2 = touches[0][1];
+    // TODO handle negative width/height
+    bboxSpec.box.attr("width", bboxSpec.x2 - bboxSpec.x1)
+                .attr("height", bboxSpec.y2 - bboxSpec.y1);
+    filterBBox();
   }
 
 
   function bboxEnd(){
-    const touches = d3.touches(this);
   	if(!bboxSpec.start) return;
   	bboxSpec.start = false;
+  	filterBBox();
+  	bboxSpec.box.remove();
+  }
+  
+  function filterBBox(){
   	var x1 = Math.min(bboxSpec.x1,bboxSpec.x2);
   	var x2 = Math.max(bboxSpec.x1,bboxSpec.x2);
 
   	var y1 = Math.min(bboxSpec.y1,bboxSpec.y2);
   	var y2 = Math.max(bboxSpec.y1,bboxSpec.y2);
-  	// console.log(x1 + " " + y1);
-  	// console.log(x2 + " " + y2);
 
   	var xMapper = d3.scaleLinear()
 	  	.domain([rangeInfo.frmX,rangeInfo.toX])
@@ -637,9 +650,7 @@ function respParcoords(data, options) {
   	}
   	console.log(dims);
   	brush(dims,ys);
-
   }
-
 
   function getRange(dim){ // TODO can be much more elegant... preprocessing
   	var min = dataMin[dim], max = dataMax[dim];

@@ -197,3 +197,9 @@ li.unchosen {
   display: inline-block;
   padding: 1rem;
 }
+
+#bboxSelection {
+  opacity: 0.25;
+  color: LightGreen;
+  stroke: LimeGreen;
+}
