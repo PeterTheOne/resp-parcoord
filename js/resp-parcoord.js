@@ -49,7 +49,8 @@ function respParcoords(data, options) {
       dim1: undefined,
       dim2: undefined,
       frm: undefined,
-      to: undefined
+      to: undefined,
+      ref: undefined
     },
     changed : true
   };
@@ -280,10 +281,15 @@ function respParcoords(data, options) {
             } else if (brushSpec.type == ANGULAR) {
               var d1 = brushSpec.angular.dim1;
               var d2 = brushSpec.angular.dim2;
-              var frm = brushSpec.angular.frm;
-              var to = brushSpec.angular.to;
-              var dif = p[d1] - p[d2];
-              return (frm <= dif && dif <= to);
+              var frm = Math.min(brushSpec.angular.frm,brushSpec.angular.to);
+              var to = Math.max(brushSpec.angular.frm,brushSpec.angular.to);
+              var mapper = d3.scaleLinear()
+			  	.domain(getRange(d1))
+			  	.range(getRange(d2));
+			  var p1 = mapper(p[d1]);
+              var dif = p[d2] - p1;
+              var ref = brushSpec.angular.ref;
+              return (frm-ref <= dif && dif <= to-ref);
             }
             return true; // No filter applied
           })
@@ -420,7 +426,6 @@ function respParcoords(data, options) {
   	if(x[1] - x[0] <= x[2] - x[1]){ // group 0 and 1 together
   		dim2 = selectedDimensions[Math.ceil(xMapper(x[1]))];
   		dim1 = selectedDimensions[Math.floor(xMapper(x[2]))];
-		angularBrush(dim1,dim2,frm,to);
 		refidx = 2;
 		idx1 = 0;
 		idx2 = 1;
@@ -440,11 +445,14 @@ function respParcoords(data, options) {
 	yMapper = d3.scaleLinear()
 	  	.domain([rangeInfo.frmY,rangeInfo.toY])
 	  	.range(rng2);
-	frm = Math.max(yMapper(touches[idx1][1]),yMapper(touches[idx1][1]));
-	to = Math.min(yMapper(touches[idx1][1]),yMapper(touches[idx2][1]));
-	frm = refy - frm;
-	to = refy - to;
-	angularBrush(dim1,dim2,frm,to);
+	frm = Math.min(yMapper(touches[idx1][1]),yMapper(touches[idx2][1]));
+	to = Math.max(yMapper(touches[idx1][1]),yMapper(touches[idx2][1]));
+	//frm = refy - frm;
+	//to = refy - to;
+	var mapper = d3.scaleLinear()
+	  	.domain(rng1)
+	  	.range(rng2);
+	angularBrush(dim1,dim2,mapper(refy),frm,to);
   }
 
   function showTouchOnAxis(touches) {
@@ -576,13 +584,14 @@ function respParcoords(data, options) {
     plot();
   }
 
-  function angularBrush(dim1, dim2, frm, to) {
+  function angularBrush(dim1, dim2, ref, frm, to) {
     clearBrush();
     brushSpec.type = ANGULAR;
     brushSpec.angular.dim1 = dim1;
     brushSpec.angular.dim2 = dim2;
     brushSpec.angular.frm = frm;
     brushSpec.angular.to = to;
+    brushSpec.angular.ref = ref;
     brushSpec.changed = true;
     plot();
   }
