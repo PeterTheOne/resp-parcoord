@@ -554,18 +554,6 @@ function respParcoords(data, options) {
     });
   }
 
-  function showDimension(dimension) {
-    selectedDimensions.append(dimension);
-    dimensionSpec.changed = true;
-    plot();
-  }
-
-  function hideDimension(dimension) {
-    selectedDimensions.remove(dimension);
-    dimensionSpec.changed = true;
-    plot();
-  }
-
   function brush(dims, rgs) {
     clearBrush();
     brushSpec.type = REGULAR;
