@@ -39,6 +39,7 @@ function respParcoords(data, options) {
   var dragging;
   var axis;
   var dimensionsMenu;
+  var dataMin = [], dataMax = []; // maps dimension to range [min,max]
 
   var NONE = "NONE", ANGULAR = "ANGULAR", REGULAR = "REGULAR";
   // specifies the brushing information
@@ -109,6 +110,18 @@ function respParcoords(data, options) {
     });
     x.domain(selectedDimensions);
     dimensions = selectedDimensions;
+
+    for(let i in dimensions){
+    	var dim = dimensions[i];
+	  	var min = data[1][dim],max=data[1][dim];
+	  	// document.getElementById("touches_field").innerHTML += " " + min + " " + max;
+	  	for(let i in data) if(i > 0){ // skip the titles
+	  		min = Math.min(min,data[i][dim]);
+	  		max = Math.max(max,data[i][dim]);
+	  	}
+	  	dataMin[dim] = min;
+	  	dataMax[dim] = max;
+	}
 
     // dimensionsMenu
     d3.select("body")
@@ -551,12 +564,7 @@ function respParcoords(data, options) {
   }
 
   function getRange(dim){ // TODO can be much more elegant... preprocessing
-  	var min = data[1][dim],max=data[1][dim];
-  	// document.getElementById("touches_field").innerHTML += " " + min + " " + max;
-  	for(let i in data) if(i > 0){ // skip the titles
-  		min = Math.min(min,data[i][dim]);
-  		max = Math.max(max,data[i][dim]);
-  	}
+  	var min = dataMin[dim], max = dataMax[dim];
   	if(dimensionSpec.inverted[dim])
   		return [min,max];
   	else

@@ -116,7 +116,7 @@ li{
 
 .unfocused path {
   fill: none;
-  stroke: grey;
+  stroke: LightGrey;
   stroke-width: 0.1;
 }
 
