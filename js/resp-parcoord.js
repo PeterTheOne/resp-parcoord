@@ -133,6 +133,13 @@ function respParcoords(data, options) {
         plot();
 
       });
+    d3.select('body')
+      .append('button')
+      .text('clear brush')
+      .on('click', function() {
+        clearBrush();
+      });
+
     // dimensionsMenu.enter()
     //   .data(dimensions)
     //   .enter()
@@ -547,18 +554,6 @@ function respParcoords(data, options) {
     .attr("class",function(d){
       return selectedDimensions.includes(d) ? "chosen" : "unchosen";
     });
-  }
-
-  function showDimension(dimension) {
-    selectedDimensions.append(dimension);
-    dimensionSpec.changed = true;
-    plot();
-  }
-
-  function hideDimension(dimension) {
-    selectedDimensions.remove(dimension);
-    dimensionSpec.changed = true;
-    plot();
   }
 
   function brush(dims, rgs) {
