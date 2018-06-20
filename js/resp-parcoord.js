@@ -388,21 +388,49 @@ function respParcoords(data, options) {
 
   function handleTouches() {
     const touches = d3.touches(this);
-    document.getElementById("touches_field").innerHTML = "";
-	for (var i = 0; i < touches.length; i++) {
-		document.getElementById("touches_field").innerHTML += touches[i][0]+ "/" + touches[i][1] + "</br>";
-	}
-    console.log(touches);
     if(touches.length == 2){
     	handleSinleBrush(touches);
+    } else if(touches.length == 4){
+    	handleDoubleBrush(touches);
     }
   }
+
+  function handleDoubleBrush(touches){
+  	touches.sort();
+  	var x = [touches[0][0],touches[3][0]];
+  	var dim = [];
+  	var xMapper = d3.scaleLinear()
+	  	.domain([rangeInfo.frmX,rangeInfo.toX])
+	  	.range([0,selectedDimensions.length-1]);
+  	for(let i in x){
+	  	x[i] = (i == 0) ? Math.ceil(xMapper(x[i])) : Math.floor(xMapper(x[i]));
+  		x[i] = Math.min(selectedDimensions.length,Math.max(0,x[i]));
+		dim[i] = selectedDimensions[x[i]];
+  	}
+
+  	var y = [touches[0][1],touches[1][1],touches[2][1],touches[3][1]];
+  	var rng = [getRange(dim[0]),getRange(dim[1])];
+  	var yMapper = [d3.scaleLinear()
+	  	.domain([rangeInfo.frmY,rangeInfo.toY])
+	  	.range(rng[0]),
+	  	d3.scaleLinear()
+	  	.domain([rangeInfo.frmY,rangeInfo.toY])
+	  	.range(rng[1])]
+  	for(let i in y){
+	  	y[i] = Math.min(rangeInfo.toY,Math.max(rangeInfo.frmY,y[i]));
+	  	y[i] = (yMapper[Math.floor(i/2)])(y[i]);
+	
+  	}
+  	var b = [[y[0],y[1]].sort(),[y[2],y[3]].sort()];
+  	brush(dim,b);
+  }
+
 
   function handleSinleBrush(touches){
   	// which dimension? take one touch and select the closest dimension to it
   	var x = touches[0][0];
   	x = Math.min(rangeInfo.toX,Math.max(rangeInfo.frmX,x));
-  	document.getElementById("touches_field").innerHTML += x ;
+  	
   	var xMapper = d3.scaleLinear()
 	  	.domain([rangeInfo.frmX,rangeInfo.toX])
 	  	.range([0,selectedDimensions.length-1]);
@@ -423,8 +451,8 @@ function respParcoords(data, options) {
 	  	y[i] = yMapper(y[i]);
   	}
   	y.sort();
-  	document.getElementById("touches_field").innerHTML += "</br>" + y;
-  	brush([dim],[y[0]],[y[1]]);
+  	//document.getElementById("touches_field").innerHTML += "</br>" + y;
+  	brush([dim],[[y[0],y[1]].sort()]);
   }
 
   function getRange(dim){ // TODO can be much more elegant... preprocessing
@@ -460,11 +488,13 @@ function respParcoords(data, options) {
     plot();
   }
 
-  function brush(dims, frm, to) {
+  function brush(dims, rgs) {
     clearBrush();
     brushSpec.type = REGULAR;
+    document.getElementById("touches_field").innerHTML = "";
+    console.log(rgs);
     for (var i in dims)
-      brushSpec.b[dims[i]] = [frm[i], to[i]];
+      brushSpec.b[dims[i]] = rgs[i];
     brushSpec.changed = true;
   	document.getElementById("touches_field").innerHTML += "</br>" + JSON.stringify(brushSpec);
     plot();
