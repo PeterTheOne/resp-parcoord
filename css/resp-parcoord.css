@@ -3,6 +3,18 @@
   height:30em;
 }
 
+#chart text, h1, p, html {
+  cursor: default;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+#chart text::selection {
+  background: none;
+}
+
 table#cars {
   border: 0.1em solid #CCC; font-family: Arial, Helvetica, sans-serif;
   font-size: 1em;
