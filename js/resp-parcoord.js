@@ -136,16 +136,12 @@ function respParcoords(data, options) {
       .attr("class","chosen")
       .attr("id",function(d){return d;})
       .on("click",function(d){
-        //console.log(d);
         dimensionSpec.hard = true;
-        dimensionSpec.changed = true;
         if(selectedDimensions.includes(d)){
-          selectedDimensions.splice(selectedDimensions.indexOf(d),1);
+        	hideDimension(d);
         } else {
-          selectedDimensions.push(d);
+  			showDimension(d);
         }
-        plot();
-
       });
     d3.select('body')
       .append('button')
@@ -162,6 +158,20 @@ function respParcoords(data, options) {
     //     .attr("class","chosen");
     g = svgTranslated.selectAll(".dimension");
     plot();
+  }
+
+  function hideDimension(d){
+    dimensionSpec.changed = true;
+  	if(selectedDimensions.length > 2){
+	  	selectedDimensions.splice(selectedDimensions.indexOf(d),1);
+	  	plot();
+  	}
+  }
+
+  function showDimension(d){
+    dimensionSpec.changed = true;
+    selectedDimensions.push(d);
+  	plot();
   }
 
 
@@ -187,7 +197,6 @@ function respParcoords(data, options) {
 
   // resize function
   function plot() {
-
     // set the view box for the chart
     var widthpx = parseInt(d3.select(options.svgSelector).style("width")),
       heightpx = parseInt(d3.select(options.svgSelector).style("height"));
@@ -341,7 +350,9 @@ function respParcoords(data, options) {
         .style("text-anchor", "middle")
         .attr("y", options.titley)
         .text(function (data) {
-          return data;
+        	return data;
+        }).on("touchend", function(d){
+        	hideDimension(d);
         });
 
       fontSize = vbh / 30; // set font size to 1/30 th of height??
@@ -419,7 +430,6 @@ function respParcoords(data, options) {
     } else if(touches.length == 4){
     	handleDoubleBrush(touches);
     } else if(touches.length == 3){
-
     	handleAngularBrush(touches);
     }
   }
