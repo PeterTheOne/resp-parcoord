@@ -81,9 +81,11 @@ function respParcoords(data, options) {
   d3.select(window).on('resize', plot);
 
   // touches test
-  svg.on('touchstart', handleTouches);
-  svg.on('touchmove', handleTouches);
-  svg.on('touchend', handleTouches);
+  // svg.on('touchstart', handleTouches);
+  svg.on('touchstart', bboxStart);
+  // svg.on('touchmove', handleTouches);
+  svg.on('touchmove', bboxMove);
+  svg.on('touchend', bboxEnd);
 
   function init() {
     svgTranslated = svg.attr("viewBox", vbr)
@@ -421,8 +423,8 @@ function respParcoords(data, options) {
 
   }
 
-  function handleTouches() {
-    const touches = d3.touches(this);
+  function handleTouches(origin) {
+    const touches = d3.touches(origin);
 
     showTouchOnAxis(touches);
     if(touches.length == 2){
@@ -572,6 +574,72 @@ function respParcoords(data, options) {
   	//document.getElementById("touches_field").innerHTML += "</br>" + y;
   	brush([dim],[y]);
   }
+
+  var bboxSpec = {
+  	strt : false,
+  	x1 : undefined,
+  	y1 : undefined,
+  	x2 : undefined,
+  	y2 : undefined
+  };
+  function bboxStart(){
+  	handleTouches(this);
+    const touches = d3.touches(this);
+    if(touches.length != 1) return;
+    bboxSpec.start = true;
+    bboxSpec.x1 = touches[0][0];
+    bboxSpec.y1 = touches[0][1];
+  }
+  function bboxMove(){
+  	handleTouches(this);
+  	if(!bboxSpec.start) return;
+    const touches = d3.touches(this);
+    if(touches.length != 1) {
+    	bboxSpec.start = false;
+    	return;
+    }
+    bboxSpec.x2 = touches[0][0];
+    bboxSpec.y2 = touches[0][1];
+  }
+
+
+  function bboxEnd(){
+    const touches = d3.touches(this);
+  	if(!bboxSpec.start) return;
+  	bboxSpec.start = false;
+  	var x1 = Math.min(bboxSpec.x1,bboxSpec.x2);
+  	var x2 = Math.max(bboxSpec.x1,bboxSpec.x2);
+
+  	var y1 = Math.min(bboxSpec.y1,bboxSpec.y2);
+  	var y2 = Math.max(bboxSpec.y1,bboxSpec.y2);
+  	// console.log(x1 + " " + y1);
+  	// console.log(x2 + " " + y2);
+
+  	var xMapper = d3.scaleLinear()
+	  	.domain([rangeInfo.frmX,rangeInfo.toX])
+	  	.range([0,selectedDimensions.length-1]);
+  	var fmX = Math.ceil(xMapper(x1));
+  	var toX = Math.floor(xMapper(x2));
+  	var ys = [];
+  	var dims = [];
+  	for(var i = fmX; i <= toX; i++){
+  		var dim = selectedDimensions[i];
+  		dims.push(dim);
+  		var rng = getRange(dim);
+	  	var yMapper = d3.scaleLinear()
+		  	.domain([rangeInfo.frmY,rangeInfo.toY])
+		  	.range(rng);
+	  	var fmY = Math.min(rangeInfo.toY,Math.max(rangeInfo.frmY,y1));
+	  	var toY = Math.min(rangeInfo.toY,Math.max(rangeInfo.frmY,y2));
+	  	fmY = yMapper(fmY);
+	  	toY = yMapper(toY);
+	  	ys.push([Math.min(fmY,toY),Math.max(fmY,toY)]);
+  	}
+  	console.log(dims);
+  	brush(dims,ys);
+
+  }
+
 
   function getRange(dim){ // TODO can be much more elegant... preprocessing
   	var min = dataMin[dim], max = dataMax[dim];
