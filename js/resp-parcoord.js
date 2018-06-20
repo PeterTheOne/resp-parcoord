@@ -81,9 +81,7 @@ function respParcoords(data, options) {
   d3.select(window).on('resize', plot);
 
   // touches test
-  // svg.on('touchstart', handleTouches);
   svg.on('touchstart', bboxStart);
-  // svg.on('touchmove', handleTouches);
   svg.on('touchmove', bboxMove);
   svg.on('touchend', bboxEnd);
 
@@ -278,7 +276,22 @@ function respParcoords(data, options) {
         .data(data)
         .enter().append("path")
         .attr("d", path);
+	    selectedDimensions.forEach(function(dimension) {
+	    	if(dimensionSpec.inverted[dimension]){
+		      y[dimension] = d3.scaleLinear()
+		        .domain(d3.extent(data, function (p) {
+		          return +p[dimension];
+		        }))
+		        .range([options.margin.bottom, height - options.margin.top - options.dy]);
+	    	} else {
+		      y[dimension] = d3.scaleLinear()
+		        .domain(d3.extent(data, function (p) {
+		          return +p[dimension];
+		        }))
+		        .range([height - options.margin.top - options.dy, options.margin.bottom]);
 
+	    	}
+	    });
         // IMPORTANT: should not include 'dimensionSpec.changed = false;' here,
         // the next if-body takes care of it
     }
@@ -354,7 +367,10 @@ function respParcoords(data, options) {
         .text(function (data) {
         	return data;
         }).on("touchend", function(d){
-        	hideDimension(d);
+        	//hideDimension(d);
+        	dimensionSpec.inverted[d] = !dimensionSpec.inverted[d];
+        	dimensionSpec.changed = true;
+        	plot();
         });
 
       fontSize = vbh / 30; // set font size to 1/30 th of height??
@@ -620,7 +636,7 @@ function respParcoords(data, options) {
   	filterBBox();
   	bboxSpec.box.remove();
   }
-  
+
   function filterBBox(){
   	var x1 = Math.min(bboxSpec.x1,bboxSpec.x2);
   	var x2 = Math.max(bboxSpec.x1,bboxSpec.x2);
@@ -648,7 +664,7 @@ function respParcoords(data, options) {
 	  	toY = yMapper(toY);
 	  	ys.push([Math.min(fmY,toY),Math.max(fmY,toY)]);
   	}
-  	console.log(dims);
+  	
   	brush(dims,ys);
   }
 
