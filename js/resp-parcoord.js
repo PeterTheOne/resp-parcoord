@@ -81,6 +81,7 @@ function respParcoords(data, options) {
   // touches test
   svg.on('touchstart', handleTouches);
   svg.on('touchmove', handleTouches);
+  svg.on('touchend', handleTouches);
 
   function init() {
     svgTranslated = svg.attr("viewBox", vbr)
@@ -385,11 +386,46 @@ function respParcoords(data, options) {
 
   function handleTouches() {
     const touches = d3.touches(this);
+
+    showTouchOnAxis(touches);
     if(touches.length == 2){
     	handleSinleBrush(touches);
     } else if(touches.length == 4){
     	handleDoubleBrush(touches);
     }
+  }
+
+  function showTouchOnAxis(touches) {
+    let xLinear = d3.scaleLinear()
+      .range([rangeInfo.frmX,rangeInfo.toX])
+      .domain([0, selectedDimensions.length - 1]);
+
+    svgTranslated.selectAll('.rect').remove();
+
+    for (let touch of touches) {
+      const touchX = touch[0];
+      const touchY = touch[1];
+
+      const axisI = Math.round(xLinear.invert(touchX));
+      const axisName = selectedDimensions[axisI];
+      const axisX = x(axisName);
+
+      //const axisY = y[axisName].invert(touchY);
+      let axisY = Math.min(
+        rangeInfo.toY,
+        Math.max(rangeInfo.frmY, touchY)
+      );
+      axisY -= options.margin.top;
+
+      svgTranslated.append("rect")
+        .attr('class', 'rect')
+        .attr("x", axisX - 2)
+        .attr("y", axisY - 1)
+        .attr("width", 4)
+        .attr("height", 2)
+        .attr('fill', 'red');
+    }
+
   }
 
   function handleDoubleBrush(touches){
