@@ -133,6 +133,13 @@ function respParcoords(data, options) {
         plot();
 
       });
+    d3.select('body')
+      .append('button')
+      .text('clear brush')
+      .on('click', function() {
+        clearBrush();
+      });
+
     // dimensionsMenu.enter()
     //   .data(dimensions)
     //   .enter()
