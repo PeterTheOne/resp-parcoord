@@ -17,12 +17,12 @@
 
 table#cars {
   border: 0.1em solid #CCC; font-family: Arial, Helvetica, sans-serif;
-  font-size: 1em;
+  font-size: 1rem;
   display: none;
 }
 table#cars  td {
-  padding: 0.25em;
-  margin: 0.2em;
+  padding: 0.25rem;
+  margin: 0.2rem;
   border: 0.2em solid #ccc;
 }
 table#cars  th {
@@ -30,7 +30,7 @@ table#cars  th {
   color: #FFF;
   font-weight: bold;
   border: 0.1em solid #ccc;
-  padding: 0.25em 1em 0.25em 1em;
+  padding: 0.25em 1em 0.25em 1rem;
 }
 tr:nth-child(even) {
   background-color: #eee;
@@ -45,8 +45,15 @@ svg {
   touch-action: none;
 }
 
-ul{margin: 0; padding: 0;}
-li{list-style-type: none; margin-left: 0; font-size: 0.625em;}
+ul{
+  margin: 0;
+  padding: 0;
+}
+
+li{
+  list-style-type: none;
+  margin-left: 0;
+}
 
 
 #main{
@@ -72,7 +79,7 @@ li{list-style-type: none; margin-left: 0; font-size: 0.625em;}
 
 #btn
 {
-  font-size: 1em;
+  font-size: 1rem;
   font-family: Verdana;
 }
 
@@ -80,10 +87,10 @@ li{list-style-type: none; margin-left: 0; font-size: 0.625em;}
 #dialog
 {
   padding: 0;
-  font-size: 1em;
+  font-size: 1rem;
 }
 
-.ui-dialog { font-size: 1em; }
+.ui-dialog { font-size: 1rem; }
 .ui-dialog .ui-dialog-content{margin-left: 0;}
 
 .hide{
@@ -132,9 +139,9 @@ li{list-style-type: none; margin-left: 0; font-size: 0.625em;}
     position: absolute;
     z-index: 1;
     font-size: 160%;
-    top: 5em;
-    right: 2em;
-    width: 7.5em;
+    top: 5rem;
+    right: 2rem;
+    width: 7.5rem;
     background-color: rgba(200,200,200,0.7);
 }
 .mheader {
@@ -154,7 +161,7 @@ li{list-style-type: none; margin-left: 0; font-size: 0.625em;}
 .mclose {
     color: black;
     float:right;
-    font-size: 1em;
+    font-size: 1rem;
     font-weight: bold;
 }
 .mclose:hover, .mclose:focus {
@@ -180,4 +187,9 @@ li.unchosen {
     background-color: #F90;
     display: block;
     position: absolute;
+}
+
+#dimensionsMenu li {
+  display: inline-block;
+  padding: 1rem;
 }
