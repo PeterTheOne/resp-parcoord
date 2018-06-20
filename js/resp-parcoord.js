@@ -97,7 +97,7 @@ function respParcoords(data, options) {
 
     // Extract the list of dimensions and create a scale for each.
     selectedDimensions = d3.keys(data[0]).filter(function (dimension) {
-      return !options.ignoreDimensions.includes(dimension);
+      return !options.ignoreDimensions.includes(dimension) && typeof(data[1][dimension]) == "number";
     });
     selectedDimensions.forEach(function(dimension) {
       y[dimension] = d3.scaleLinear()
@@ -380,7 +380,7 @@ function respParcoords(data, options) {
 			rangeInfo.frmY = options.margin.top + bbox.y;
 			rangeInfo.toY = options.margin.top + bbox.y + bbox.height;
 		});
-	console.log(rangeInfo);
+	//console.log(rangeInfo);
 
   }
 
@@ -392,7 +392,45 @@ function respParcoords(data, options) {
     	handleSinleBrush(touches);
     } else if(touches.length == 4){
     	handleDoubleBrush(touches);
+    } else if(touches.length == 3){
+
+    	handleAngularBrush(touches);
     }
+  }
+
+  function handleAngularBrush(touches){
+  	var x = [touches[0][0],touches[1][0],touches[2][0]];
+  	x.sort();
+  	var xMapper = d3.scaleLinear()
+	  	.domain([rangeInfo.frmX,rangeInfo.toX])
+	  	.range([0,selectedDimensions.length-1]);
+  	var dim1,dim2;
+  	var refy;
+  	var frm,to;
+  	// group x coords
+  	if(x[1] - x[0] <= x[2] - x[1]){ // group 0 and 1 together
+  		dim2 = selectedDimensions[Math.ceil(xMapper(x[1]))];
+  		dim1 = selectedDimensions[Math.floor(xMapper(x[2]))];
+  		var rng1 = getRange(dim1);
+		var yMapper = d3.scaleLinear()
+		  	.domain([rangeInfo.frmY,rangeInfo.toY])
+		  	.range(rng1);
+		refy = yMapper(touches[2][1]);
+		var rng2 = getRange(dim2);
+		yMapper = d3.scaleLinear()
+		  	.domain([rangeInfo.frmY,rangeInfo.toY])
+		  	.range(rng2);
+		frm = Math.max(yMapper(touches[0][1]),yMapper(touches[1][1]));
+		to = Math.min(yMapper(touches[0][1]),yMapper(touches[1][1]));
+		frm = refy - frm;
+		to = refy - to;
+		console.log("dims = [" + dim1 + "," +  dim2 + "]");
+		console.log([frm,to]);
+		angularBrush(dim1,dim2,frm,to);
+  	} else {
+  		dim1 = selectedDimensions[Math.ceil(xMapper(x[0]))];
+  		dim2 = selectedDimensions[Math.floor(xMapper(x[1]))];
+  	}
   }
 
   function showTouchOnAxis(touches) {
@@ -525,7 +563,7 @@ function respParcoords(data, options) {
     clearBrush();
     brushSpec.type = REGULAR;
     document.getElementById("touches_field").innerHTML = "";
-    console.log(rgs);
+    //console.log(rgs);
     for (var i in dims)
       brushSpec.b[dims[i]] = rgs[i];
     brushSpec.changed = true;
@@ -536,8 +574,10 @@ function respParcoords(data, options) {
   function angularBrush(dim1, dim2, frm, to) {
     clearBrush();
     brushSpec.type = ANGULAR;
-    brushSpec.angular.dim = [dim1, dim2];
-    brushSpec.angular.range = [frm, to];
+    brushSpec.angular.dim1 = dim1;
+    brushSpec.angular.dim2 = dim2;
+    brushSpec.angular.frm = frm;
+    brushSpec.angular.to = to;
     brushSpec.changed = true;
     plot();
   }
