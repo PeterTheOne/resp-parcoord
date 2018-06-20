@@ -16,7 +16,7 @@ async function init() {
   respParcoords(data, options);
 
   // touchevents
-  startup()
+  //startup()
 }
 
 // wait until website is loaded
