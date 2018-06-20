@@ -78,8 +78,20 @@ function respParcoords(data, options) {
   svg.on('touchstart', handleTouches);
   svg.on('touchmove', handleTouches);
   function handleTouches() {
+    let xLinear = d3.scaleLinear()
+      .range([options.margin.left, width - options.margin.right])
+      .domain([0, selectedDimensions.length - 1]);
+
     const touches = d3.touches(this);
-    console.log(touches)
+    const touchX = touches[0][0];
+    const touchY = touches[0][1];
+
+    const axisI = Math.round(xLinear.invert(touches[0][0]));
+    const axisName = selectedDimensions[axisI];
+    const axisX = x(axisName);
+    console.log(axisI);
+    console.log(axisName);
+    console.log(axisX);
   }
 
   function init() {
@@ -152,9 +164,9 @@ function respParcoords(data, options) {
     );
   }
 
-  function position(d) {
-    var v = dragging[d];
-    return v == null ? x(d) : v;
+  function position(data) {
+    var v = dragging[data];
+    return v == null ? x(data) : v;
   }
 
   function getBaseFontSize() {
@@ -187,7 +199,8 @@ function respParcoords(data, options) {
       var numberSegementsShown = Math.floor(width / options.minSegmentSize);
       if (numberSegementsShown < 2) numberSegementsShown = 2;
       if (numberSegementsShown > numberDimensions) numberSegementsShown = numberDimensions;
-      if(selectedDimensions.length != numberSegementsShown){ // if it's the same number, don't change
+      // if it's the same number, don't change
+      if(selectedDimensions.length !== numberSegementsShown){
         dimensionSpec.changed = true;
         if(selectedDimensions.length > numberSegementsShown){
           selectedDimensions = selectedDimensions.slice(0,numberSegementsShown);
@@ -339,8 +352,8 @@ function respParcoords(data, options) {
     var dyt = brp * (options.titleStep);
 
     x.range([options.margin.left, width - options.margin.right]);
-    g.attr("transform", function (d) {
-      if (x(d)) return "translate(" + x(d) + ")";
+    g.attr("transform", function (data) {
+      if (x(data)) return "translate(" + x(data) + ")";
     });
     unfocused.attr("d", path);
     focused.attr("d", path);
@@ -394,7 +407,7 @@ function respParcoords(data, options) {
     x.range([options.margin.left, width - options.margin.right], 2);
     g.attr("transform", function (d) {
       if (x(d)) return "translate(" + x(d) + ")";
-    })
+    });
     unfocused.attr("d", path);
     focused.attr("d", path);
   }
