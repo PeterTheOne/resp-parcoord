@@ -499,7 +499,9 @@ function respParcoords(data, options) {
 	  	y[i] = (yMapper[Math.floor(i/2)])(y[i]);
 
   	}
-  	var b = [[y[0],y[1]].sort(),[y[2],y[3]].sort()];
+  	var y1 = [Math.min(y[0],y[1]),Math.max(y[0],y[1])];
+  	var y2 = [Math.min(y[2],y[3]),Math.max(y[2],y[3])];
+  	var b = [y1,y2];
   	brush(dim,b);
   }
 
