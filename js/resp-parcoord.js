@@ -414,30 +414,37 @@ function respParcoords(data, options) {
   	var dim1,dim2;
   	var refy;
   	var frm,to;
+  	var refidx;
+  	var idx1,idx2;
   	// group x coords
   	if(x[1] - x[0] <= x[2] - x[1]){ // group 0 and 1 together
   		dim2 = selectedDimensions[Math.ceil(xMapper(x[1]))];
   		dim1 = selectedDimensions[Math.floor(xMapper(x[2]))];
-  		var rng1 = getRange(dim1);
-		var yMapper = d3.scaleLinear()
-		  	.domain([rangeInfo.frmY,rangeInfo.toY])
-		  	.range(rng1);
-		refy = yMapper(touches[2][1]);
-		var rng2 = getRange(dim2);
-		yMapper = d3.scaleLinear()
-		  	.domain([rangeInfo.frmY,rangeInfo.toY])
-		  	.range(rng2);
-		frm = Math.max(yMapper(touches[0][1]),yMapper(touches[1][1]));
-		to = Math.min(yMapper(touches[0][1]),yMapper(touches[1][1]));
-		frm = refy - frm;
-		to = refy - to;
-		console.log("dims = [" + dim1 + "," +  dim2 + "]");
-		console.log([frm,to]);
 		angularBrush(dim1,dim2,frm,to);
+		refidx = 2;
+		idx1 = 0;
+		idx2 = 1;
   	} else {
   		dim1 = selectedDimensions[Math.ceil(xMapper(x[0]))];
   		dim2 = selectedDimensions[Math.floor(xMapper(x[1]))];
+		refidx = 0;
+		idx1 = 1;
+		idx2 = 2;
   	}
+	var rng1 = getRange(dim1);
+	var yMapper = d3.scaleLinear()
+	  	.domain([rangeInfo.frmY,rangeInfo.toY])
+	  	.range(rng1);
+	refy = yMapper(touches[refidx][1]);
+	var rng2 = getRange(dim2);
+	yMapper = d3.scaleLinear()
+	  	.domain([rangeInfo.frmY,rangeInfo.toY])
+	  	.range(rng2);
+	frm = Math.max(yMapper(touches[idx1][1]),yMapper(touches[idx1][1]));
+	to = Math.min(yMapper(touches[idx1][1]),yMapper(touches[idx2][1]));
+	frm = refy - frm;
+	to = refy - to;
+	angularBrush(dim1,dim2,frm,to);
   }
 
   function showTouchOnAxis(touches) {
