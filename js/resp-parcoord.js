@@ -124,6 +124,7 @@ function respParcoords(data, options) {
       .on("click",function(d){
         //console.log(d);
         dimensionSpec.hard = true;
+        dimensionSpec.changed = true;
         if(selectedDimensions.includes(d)){
           selectedDimensions.splice(selectedDimensions.indexOf(d),1);
         } else {
