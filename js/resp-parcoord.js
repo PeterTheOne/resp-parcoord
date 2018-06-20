@@ -264,7 +264,6 @@ function respParcoords(data, options) {
             ///// The whole filtering (brushing) logic /////
             if (brushSpec.type == REGULAR) {
               for (var dim in brushSpec.b) {
-
                 if (!selectedDimensions.includes(dim)) continue;
                 if (brushSpec.b[dim] == undefined || brushSpec.b[dim] == -1) continue;
                 if (brushSpec.b[dim][0] > p[dim] || p[dim] > brushSpec.b[dim][1]) return false;
@@ -521,9 +520,9 @@ function respParcoords(data, options) {
 	  	y[i] = Math.min(rangeInfo.toY,Math.max(rangeInfo.frmY,y[i]));
 	  	y[i] = yMapper(y[i]);
   	}
-  	y.sort();
+  	y = [Math.min(y[0],y[1]),Math.max(y[0],y[1])];
   	//document.getElementById("touches_field").innerHTML += "</br>" + y;
-  	brush([dim],[[y[0],y[1]].sort()]);
+  	brush([dim],[y]);
   }
 
   function getRange(dim){ // TODO can be much more elegant... preprocessing
@@ -564,8 +563,9 @@ function respParcoords(data, options) {
     brushSpec.type = REGULAR;
     document.getElementById("touches_field").innerHTML = "";
     //console.log(rgs);
-    for (var i in dims)
+    for (var i in dims){
       brushSpec.b[dims[i]] = rgs[i];
+    }
     brushSpec.changed = true;
   	document.getElementById("touches_field").innerHTML += "</br>" + JSON.stringify(brushSpec);
     plot();
