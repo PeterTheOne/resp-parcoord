@@ -526,7 +526,7 @@ function respParcoords(data, options) {
       .range([rangeInfo.frmX,rangeInfo.toX])
       .domain([0, selectedDimensions.length - 1]);
 
-    svgTranslated.selectAll('.rect').remove();
+    svgTranslated.selectAll('.select-marker').remove();
 
     for (let touch of touches) {
       const touchX = touch[0];
@@ -543,15 +543,21 @@ function respParcoords(data, options) {
       );
       axisY -= options.margin.top;
 
-      svgTranslated.append("rect")
-        .attr('class', 'rect')
+      const polygonPoints = [
+        {x: axisX + 1, y: axisY - 1.5},
+        {x: axisX + 1, y: axisY + 1.5},
+        {x: axisX + 4, y: axisY}
+      ];
+
+      svgTranslated.append("polygon")
+        .attr('class', 'select-marker')
+        .attr('points', polygonPoints.map(function(d) {
+          return [d.x, d.y].join(',');
+        }).join(' '))
         .attr("x", axisX - 2)
         .attr("y", axisY - 1)
-        .attr("width", 4)
-        .attr("height", 2)
-        .attr('fill', 'red');
+        .attr('fill', 'green');
     }
-
   }
 
   function handleDoubleBrush(touches){
