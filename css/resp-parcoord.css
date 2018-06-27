@@ -199,9 +199,16 @@ li.unchosen {
 }
 
 #bboxSelection {
-  opacity: 0.1;
+  opacity: 0.15;
   color: LightGreen;
   stroke: LimeGreen;
 }
 
 
+.sortIcon {
+  padding:2;
+}
+
+.title{
+  padding:2;
+}

@@ -366,10 +366,10 @@ function respParcoords(data, options) {
         });
 
       const polyX = -0.5;
-      const polyY = 1;
+      const polyY = -1;
       const sortPolyPoints = [
-        {x: polyX - 1.5, y: polyY + 3},
-        {x: polyX + 1.5, y: polyY + 3},
+        {x: polyX - 2.5, y: polyY + 5},
+        {x: polyX + 2.5, y: polyY + 5},
         {x: polyX, y: polyY + 0.5}
       ];
       sortIcon = ax.append('polygon')
@@ -377,10 +377,15 @@ function respParcoords(data, options) {
           return [d.x, d.y].join(',');
         }).join(' '))
         .attr('fill', 'black')
-        .attr("transform", "rotate(180)");
+        .attr("transform", function(d){
+        	return "rotate(" + (dimensionSpec.inverted[d] ? "180)" : "0)");
+        }).attr("class","sortIcon")
+        .on('touchend',function(d){
+      	invertAxis(d);
+      });
         // the following line flips the sortIcon
       sortIcon.attr('transform-origin', polyX + ' ' + (polyY + 2));
-
+      
       a = ax.append("text")
         .attr("class", "title")
         .attr("fill", "black")
@@ -485,7 +490,7 @@ function respParcoords(data, options) {
 	  	.range([0,selectedDimensions.length-1]);
   	var idx = Math.round(xMapper(x));
   	if(isNaN(idx)){
-  		invertAxis(d);
+  		//invertAxis(d);
   	} else {
   		changeAxisIndex(d,idx)
   	}
@@ -498,13 +503,13 @@ function respParcoords(data, options) {
   }
 
   function changeAxisIndex(d,idx){
-  	console.log(d+ " " + idx +
-  		 " " +  selectedDimensions.indexOf(d));
-  	console.log(selectedDimensions);
+  	// console.log(d+ " " + idx +
+  	// 	 " " +  selectedDimensions.indexOf(d));
+  	// console.log(selectedDimensions);
   	selectedDimensions.splice(selectedDimensions.indexOf(d),1);
-  	console.log(selectedDimensions);
+  	// console.log(selectedDimensions);
   	selectedDimensions.splice(idx, 0, d);
-  	console.log(selectedDimensions);
+  	// console.log(selectedDimensions);
   	dimensionSpec.changed = true;
   	plot();
   }
