@@ -296,7 +296,7 @@ function respParcoords(data, options) {
         // the next if-body takes care of it
     }
 
-    if(dimensionSpec.changed || brushSpec.changed){
+    if (dimensionSpec.changed || brushSpec.changed) {
       svgTranslated.selectAll("g.focused").remove();
 
       // Add blue focused foreground lines; thickness in css.
@@ -397,6 +397,8 @@ function respParcoords(data, options) {
      //svg.append('rect').attrs({ x: yRange[0], y: yRange[1], width: 1, height: 1, fill: 'red' });
 
       //console.log(yRange);
+
+      showBrushSelectMarkers();
     }
 
 
@@ -442,7 +444,6 @@ function respParcoords(data, options) {
   function handleTouches(origin) {
     const touches = d3.touches(origin);
 
-    showTouchOnAxis(touches);
     if(touches.length == 2){
     	handleSinleBrush(touches);
     } else if(touches.length == 4){
@@ -496,43 +497,37 @@ function respParcoords(data, options) {
 	angularBrush(dim1,dim2,mapper(refy),frm,to);
   }
 
-  function showTouchOnAxis(touches) {
-    let xLinear = d3.scaleLinear()
-      .range([rangeInfo.frmX,rangeInfo.toX])
-      .domain([0, selectedDimensions.length - 1]);
-
+  function showBrushSelectMarkers() {
     svgTranslated.selectAll('.select-marker').remove();
-
-    for (let touch of touches) {
-      const touchX = touch[0];
-      const touchY = touch[1];
-
-      const axisI = Math.round(xLinear.invert(touchX));
-      const axisName = selectedDimensions[axisI];
-      const axisX = x(axisName);
-
-      //const axisY = y[axisName].invert(touchY);
-      let axisY = Math.min(
-        rangeInfo.toY,
-        Math.max(rangeInfo.frmY, touchY)
-      );
-      axisY -= options.margin.top;
-
-      const polygonPoints = [
-        {x: axisX + 1, y: axisY - 1.5},
-        {x: axisX + 1, y: axisY + 1.5},
-        {x: axisX + 4, y: axisY}
-      ];
-
-      svgTranslated.append("polygon")
-        .attr('class', 'select-marker')
-        .attr('points', polygonPoints.map(function(d) {
-          return [d.x, d.y].join(',');
-        }).join(' '))
-        .attr("x", axisX - 2)
-        .attr("y", axisY - 1)
-        .attr('fill', 'green');
+    if (brushSpec.type !== REGULAR) {
+      return;
     }
+    for (let dim in brushSpec.b) {
+      if (!selectedDimensions.includes(dim)) {
+        continue;
+      }
+      if (brushSpec.b[dim] == undefined || brushSpec.b[dim] == -1) {
+        continue;
+      }
+
+      const axisX = x(dim);
+      for (let i in brushSpec.b[dim]) {
+        const axisY = y[dim](brushSpec.b[dim][i]);
+
+        const polygonPoints = [
+          {x: axisX + 1, y: axisY - 1.5},
+          {x: axisX + 1, y: axisY + 1.5},
+          {x: axisX + 4, y: axisY}
+        ];
+
+        svgTranslated.append("polygon")
+          .attr('class', 'select-marker')
+          .attr('points', polygonPoints.map(function(d) {
+            return [d.x, d.y].join(',');
+          }).join(' '))
+          .attr('fill', 'green');
+      }
+      }
   }
 
   function handleDoubleBrush(touches){
@@ -637,6 +632,7 @@ function respParcoords(data, options) {
 
 
   function bboxEnd(){
+    handleTouches(this);
   	if(!bboxSpec.start) return;
   	bboxSpec.start = false;
   	filterBBox();
