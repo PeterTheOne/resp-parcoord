@@ -575,8 +575,11 @@ function respParcoords(data, options) {
     if (brushSpec.type !== REGULAR) {
       for (let i in selectedDimensions) {
         const dim = selectedDimensions[i];
-        setSelectionMarker(dim, y[dim].invert(rangeInfo.frmY - options.margin.top));
-        setSelectionMarker(dim, y[dim].invert(rangeInfo.toY - options.margin.top));
+        const y1 = y[dim].invert(rangeInfo.frmY - options.margin.top);
+        const y2 = y[dim].invert(rangeInfo.toY - options.margin.top);
+        setSelectionMarker(dim, y1);
+        setSelectionMarker(dim, y2);
+        setSelectionRange(dim, y1, y2);
       }
       return;
     }
@@ -584,13 +587,16 @@ function respParcoords(data, options) {
       const dim = selectedDimensions[i];
       console.log(brushSpec.b);
       if (brushSpec.b.hasOwnProperty(dim)
-        && brushSpec.b[dim] != undefined && brushSpec.b[dim] !== -1) {
-        for (let i in brushSpec.b[dim]) {
-          setSelectionMarker(dim, brushSpec.b[dim][i]);
-        }
+          && brushSpec.b[dim] != undefined && brushSpec.b[dim] !== -1) {
+        setSelectionMarker(dim, brushSpec.b[dim][0]);
+        setSelectionMarker(dim, brushSpec.b[dim][1]);
+        setSelectionRange(dim, brushSpec.b[dim][0], brushSpec.b[dim][1]);
       } else {
-        setSelectionMarker(dim, y[dim].invert(rangeInfo.frmY - options.margin.top));
-        setSelectionMarker(dim, y[dim].invert(rangeInfo.toY - options.margin.top));
+        const y1 = y[dim].invert(rangeInfo.frmY - options.margin.top);
+        const y2 = y[dim].invert(rangeInfo.toY - options.margin.top);
+        setSelectionMarker(dim, y1);
+        setSelectionMarker(dim, y2);
+        setSelectionRange(dim, y1, y2);
       }
     }
   }
@@ -599,11 +605,11 @@ function respParcoords(data, options) {
     const axisX = x(dim);
     const axisY = y[dim](bY);
 
-        const polygonPoints = [
-          {x: axisX + 3, y: axisY - 1.5},
-          {x: axisX + 3, y: axisY + 1.5},
-          {x: axisX + 0.5, y: axisY}
-        ];
+    const polygonPoints = [
+      {x: axisX + 3, y: axisY - 1.5},
+      {x: axisX + 3, y: axisY + 1.5},
+      {x: axisX + 0.5, y: axisY}
+    ];
 
     svgTranslated.append("polygon")
       .attr('class', 'select-marker')
@@ -611,6 +617,21 @@ function respParcoords(data, options) {
         return [d.x, d.y].join(',');
       }).join(' '))
       .attr('fill', 'green');
+  }
+
+  function setSelectionRange(dim, bY1, bY2) {
+    console.log('setSelectionRange');
+    const axisX = x(dim);
+    const axisY1 = y[dim](bY1);
+    const axisY2 = y[dim](bY2);
+
+    svgTranslated.append("line")
+      .attr('x1', axisX)
+      .attr('y1', axisY1)
+      .attr('x2', axisX)
+      .attr('y2', axisY2)
+      .attr("stroke-width", 0.5)
+      .attr('stroke', 'green');
   }
 
   function handleDoubleBrush(touches){
