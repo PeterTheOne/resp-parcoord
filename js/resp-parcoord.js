@@ -3,7 +3,7 @@
 function respParcoords(data, options) {
   const optionsDefault = {
     svgSelector: '#chart',
-    minSegmentSize: 40,
+    minSegmentSize: 30,
     breakpoint1: '35em',
     breakpoint2: '50em',
     margin: {
@@ -371,8 +371,10 @@ function respParcoords(data, options) {
         	dimensionSpec.inverted[d] = !dimensionSpec.inverted[d];
         	dimensionSpec.changed = true;
         	plot();
-        }).on("drag", dragging).on("end", dragended);
-
+        }).call(d3.drag()
+        //.on("start", dragstarted)
+        .on("drag", dragged)
+        .on("end", dragended));
 
       //var tri = d3.symbol().size(options.dW).type(d3.symbolTriangle);
       //svgTranslated.selectAll(".axis").append("path").attr("d",tri());
@@ -447,21 +449,26 @@ function respParcoords(data, options) {
   	x : undefined,
   	y : undefined
   };
-  function dragging(d){
-  	var t = d3.touches(svg);
-  	dragSpec.x = t[0][0];
-  	dragSpec.y = t[0][1];
+
+  function dragged(d){
+  	dragSpec.x = d3.event.x;
+  	dragSpec.y = d3.event.y;
   }
 
   function dragended(d){
   	var x = Math.min(rangeInfo.toX,Math.max(rangeInfo.frmX,dragSpec.x));
-  	alert(x);
+  	
   	var xMapper = d3.scaleLinear()
 	  	.domain([rangeInfo.frmX,rangeInfo.toX])
 	  	.range([0,selectedDimensions.length-1]);
-  	var dimensionIdx = Math.round(xMapper(x));
-  	alert(dimensionIdx + " " + selectedDimensions[dimensionIdx]);
+  	var idx = Math.round(xMapper(x));
+  	changeAxisIndex(d,idx)
+  }
 
+  function changeAxisIndex(d,idx){
+  	selectedDimensions.splice(selectedDimensions.indexOf(d),1);
+  	selectedDimensions.splice(idx, 0, d);
+  	plot();
   }
 
   function handleTouches(origin) {
