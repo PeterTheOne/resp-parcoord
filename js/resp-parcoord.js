@@ -5,7 +5,7 @@ function respParcoords(data, options) {
     svgSelector: '#chart',
     minSegmentSize: 50,
     breakpoint1: '35em',
-    breakpoint2: '50em',
+    breakpoint2: '50em', 
     margin: {
       top: 20,
       right: 30,
@@ -106,8 +106,7 @@ function respParcoords(data, options) {
         .domain(d3.extent(data, function (p) {
           return +p[dimension];
         }))
-        .range([height - options.margin.top - options.dy, options.margin.bottom])
-        .clamp(true);
+        .range([height - options.margin.top - options.dy, options.margin.bottom]);
     });
     x.domain(selectedDimensions);
     dimensions = selectedDimensions;
@@ -379,7 +378,7 @@ function respParcoords(data, options) {
       //var tri = d3.symbol().size(options.dW).type(d3.symbolTriangle);
       //svgTranslated.selectAll(".axis").append("path").attr("d",tri());
       //g.append("path").attr("d",d3.svg.symbol().type("triangle-up"));
-
+      
       fontSize = vbh / 30; // set font size to 1/30 th of height??
 
       svgTranslated.selectAll(".axis")
@@ -404,6 +403,8 @@ function respParcoords(data, options) {
      //svg.append('rect').attrs({ x: yRange[0], y: yRange[1], width: 1, height: 1, fill: 'red' });
 
       //console.log(yRange);
+
+      showBrushSelectMarkers();
     }
 
 
@@ -444,9 +445,6 @@ function respParcoords(data, options) {
 		});
 	//console.log(rangeInfo);
 
-
-
-    showBrushSelectMarkers();
   }
   var dragSpec = {
   	x : undefined,
@@ -460,7 +458,7 @@ function respParcoords(data, options) {
 
   function dragended(d){
   	var x = Math.min(rangeInfo.toX,Math.max(rangeInfo.frmX,dragSpec.x));
-
+  	
   	var xMapper = d3.scaleLinear()
 	  	.domain([rangeInfo.frmX,rangeInfo.toX])
 	  	.range([0,selectedDimensions.length-1]);
@@ -479,7 +477,7 @@ function respParcoords(data, options) {
   }
 
   function changeAxisIndex(d,idx){
-  	console.log(d+ " " + idx +
+  	console.log(d+ " " + idx + 
   		 " " +  selectedDimensions.indexOf(d));
   	console.log(selectedDimensions);
   	selectedDimensions.splice(selectedDimensions.indexOf(d),1);
@@ -490,14 +488,18 @@ function respParcoords(data, options) {
   	plot();
   }
 
+  var numTouches = 0;
+
+
+
   function handleTouches(origin) {
     const touches = d3.touches(origin);
-
-    if(touches.length == 2){
+    numTouches = touches.length;
+    if(numTouches == 2){
     	handleSinleBrush(touches);
-    } else if(touches.length == 4){
+    } else if(numTouches == 4){
     	handleDoubleBrush(touches);
-    } else if(touches.length == 3){
+    } else if(numTouches == 3){
     	handleAngularBrush(touches);
     }
   }
@@ -549,31 +551,19 @@ function respParcoords(data, options) {
   function showBrushSelectMarkers() {
     svgTranslated.selectAll('.select-marker').remove();
     if (brushSpec.type !== REGULAR) {
-      for (let i in selectedDimensions) {
-        const dim = selectedDimensions[i];
-        setSelectionMarker(dim, y[dim].invert(rangeInfo.frmY - options.margin.top));
-        setSelectionMarker(dim, y[dim].invert(rangeInfo.toY - options.margin.top));
-      }
       return;
     }
-    for (let i in selectedDimensions) {
-      const dim = selectedDimensions[i];
-      console.log(brushSpec.b);
-      if (brushSpec.b.hasOwnProperty(dim)
-        && brushSpec.b[dim] != undefined && brushSpec.b[dim] !== -1) {
-        for (let i in brushSpec.b[dim]) {
-          setSelectionMarker(dim, brushSpec.b[dim][i]);
-        }
-      } else {
-        setSelectionMarker(dim, y[dim].invert(rangeInfo.frmY - options.margin.top));
-        setSelectionMarker(dim, y[dim].invert(rangeInfo.toY - options.margin.top));
+    for (let dim in brushSpec.b) {
+      if (!selectedDimensions.includes(dim)) {
+        continue;
       }
-    }
-  }
+      if (brushSpec.b[dim] == undefined || brushSpec.b[dim] == -1) {
+        continue;
+      }
 
-  function setSelectionMarker(dim, bY) {
-    const axisX = x(dim);
-    const axisY = y[dim](bY);
+      const axisX = x(dim);
+      for (let i in brushSpec.b[dim]) {
+        const axisY = y[dim](brushSpec.b[dim][i]);
 
         const polygonPoints = [
           {x: axisX + 3, y: axisY - 1.5},
@@ -581,12 +571,14 @@ function respParcoords(data, options) {
           {x: axisX + 0.5, y: axisY}
         ];
 
-    svgTranslated.append("polygon")
-      .attr('class', 'select-marker')
-      .attr('points', polygonPoints.map(function(d) {
-        return [d.x, d.y].join(',');
-      }).join(' '))
-      .attr('fill', 'green');
+        svgTranslated.append("polygon")
+          .attr('class', 'select-marker')
+          .attr('points', polygonPoints.map(function(d) {
+            return [d.x, d.y].join(',');
+          }).join(' '))
+          .attr('fill', 'green');
+      }
+      }
   }
 
   function handleDoubleBrush(touches){
