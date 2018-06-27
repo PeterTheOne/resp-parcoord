@@ -3,7 +3,7 @@ body {
 }
 
 #chart {
-  width:100%;
+  width:95%;
   height:30em;
 }
 
@@ -203,3 +203,5 @@ li.unchosen {
   color: LightGreen;
   stroke: LimeGreen;
 }
+
+

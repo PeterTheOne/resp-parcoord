@@ -3,7 +3,7 @@
 function respParcoords(data, options) {
   const optionsDefault = {
     svgSelector: '#chart',
-    minSegmentSize: 30,
+    minSegmentSize: 50,
     breakpoint1: '35em',
     breakpoint2: '50em',
     margin: {
@@ -70,7 +70,7 @@ function respParcoords(data, options) {
 
   let a;
 
-  let vbmx = 0, vbmy = 0, vbw = 80, vbh = 80;
+  let vbmx = 0, vbmy = 0, vbw = 100, vbh = 100;
   let vbr = vbmx + " " + vbmy + " " + vbw + " " + vbh;
   let width = vbw - vbmx;
   let height = vbh - vbmy;
@@ -199,12 +199,14 @@ function respParcoords(data, options) {
   // resize function
   function plot() {
     // set the view box for the chart
+    d3.select(options.svgSelector)
+    .attr("style","height:"+Math.min(480,window.innerHeight));
     var widthpx = parseInt(d3.select(options.svgSelector).style("width")),
       heightpx = parseInt(d3.select(options.svgSelector).style("height"));
-
+      console.log(d3.select(options.svgSelector).style("height")+" " + window.innerHeight);
     vbmx = -15, vbmy = 0;
-    vbw = (widthpx / heightpx * 80);
-    vbh = 80;
+    vbw = (widthpx / heightpx * 100);
+    vbh = 100;
     vbr = vbmx + " " + vbmy + " " + vbw + " " + vbh;
     width = vbw - 0;
     height = vbh - 0;
