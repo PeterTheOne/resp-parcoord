@@ -384,7 +384,7 @@ function respParcoords(data, options) {
       	invertAxis(d);
       });
         // the following line flips the sortIcon
-      sortIcon.attr('transform-origin', polyX + ' ' + (polyY + 2));
+      sortIcon.attr('transform-origin', polyX + ' ' + (polyY + 3));
       
       a = ax.append("text")
         .attr("class", "title")
