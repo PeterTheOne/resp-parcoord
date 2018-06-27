@@ -3,7 +3,7 @@ body {
 }
 
 #chart {
-  width:100%;
+  width:95%;
   height:30em;
 }
 
@@ -199,7 +199,9 @@ li.unchosen {
 }
 
 #bboxSelection {
-  opacity: 0.25;
+  opacity: 0.1;
   color: LightGreen;
   stroke: LimeGreen;
 }
+
+
