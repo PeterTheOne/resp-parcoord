@@ -3,7 +3,7 @@
 function respParcoords(data, options) {
   const optionsDefault = {
     svgSelector: '#chart',
-    minSegmentSize: 40,
+    minSegmentSize: 30,
     breakpoint1: '35em',
     breakpoint2: '50em',
     margin: {
@@ -369,10 +369,14 @@ function respParcoords(data, options) {
         	return data;
         }).on("touchend", function(d){
         	//hideDimension(d);
-        	dimensionSpec.inverted[d] = !dimensionSpec.inverted[d];
-        	dimensionSpec.changed = true;
-        	plot();
-        });
+        }).call(d3.drag()
+        //.on("start", dragstarted)
+        .on("drag", dragged)
+        .on("end", dragended));
+
+      //var tri = d3.symbol().size(options.dW).type(d3.symbolTriangle);
+      //svgTranslated.selectAll(".axis").append("path").attr("d",tri());
+      //g.append("path").attr("d",d3.svg.symbol().type("triangle-up"));
 
       fontSize = vbh / 30; // set font size to 1/30 th of height??
 
@@ -441,6 +445,47 @@ function respParcoords(data, options) {
 
 
     showBrushSelectMarkers();
+  }
+  var dragSpec = {
+  	x : undefined,
+  	y : undefined
+  };
+
+  function dragged(d){
+  	dragSpec.x = d3.event.x;
+  	dragSpec.y = d3.event.y;
+  }
+
+  function dragended(d){
+  	var x = Math.min(rangeInfo.toX,Math.max(rangeInfo.frmX,dragSpec.x));
+
+  	var xMapper = d3.scaleLinear()
+	  	.domain([rangeInfo.frmX,rangeInfo.toX])
+	  	.range([0,selectedDimensions.length-1]);
+  	var idx = Math.round(xMapper(x));
+  	if(isNaN(idx)){
+  		invertAxis(d);
+  	} else {
+  		changeAxisIndex(d,idx)
+  	}
+  }
+
+  function invertAxis(d){
+  	dimensionSpec.inverted[d] = !dimensionSpec.inverted[d];
+	dimensionSpec.changed = true;
+	plot();
+  }
+
+  function changeAxisIndex(d,idx){
+  	console.log(d+ " " + idx +
+  		 " " +  selectedDimensions.indexOf(d));
+  	console.log(selectedDimensions);
+  	selectedDimensions.splice(selectedDimensions.indexOf(d),1);
+  	console.log(selectedDimensions);
+  	selectedDimensions.splice(idx, 0, d);
+  	console.log(selectedDimensions);
+  	dimensionSpec.changed = true;
+  	plot();
   }
 
   function handleTouches(origin) {
@@ -528,11 +573,11 @@ function respParcoords(data, options) {
     const axisX = x(dim);
     const axisY = y[dim](bY);
 
-    const polygonPoints = [
-      {x: axisX + 1, y: axisY - 1.5},
-      {x: axisX + 1, y: axisY + 1.5},
-      {x: axisX + 4, y: axisY}
-    ];
+        const polygonPoints = [
+          {x: axisX + 3, y: axisY - 1.5},
+          {x: axisX + 3, y: axisY + 1.5},
+          {x: axisX + 0.5, y: axisY}
+        ];
 
     svgTranslated.append("polygon")
       .attr('class', 'select-marker')
@@ -636,9 +681,10 @@ function respParcoords(data, options) {
     }
     bboxSpec.x2 = touches[0][0];
     bboxSpec.y2 = touches[0][1];
-    // TODO handle negative width/height
-    bboxSpec.box.attr("width", bboxSpec.x2 - bboxSpec.x1)
-                .attr("height", bboxSpec.y2 - bboxSpec.y1);
+    bboxSpec.box.attr("x", Math.min(bboxSpec.x2,bboxSpec.x1))
+    			.attr("y", Math.min(bboxSpec.y2,bboxSpec.y1))
+    			.attr("width", Math.abs(bboxSpec.x2 - bboxSpec.x1))
+                .attr("height", Math.abs(bboxSpec.y2 - bboxSpec.y1));
     filterBBox();
   }
 
