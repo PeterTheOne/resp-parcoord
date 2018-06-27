@@ -572,6 +572,7 @@ function respParcoords(data, options) {
 
   function showBrushSelectMarkers() {
     svgTranslated.selectAll('.select-marker').remove();
+    svgTranslated.selectAll('.select-range').remove();
     if (brushSpec.type !== REGULAR) {
       for (let i in selectedDimensions) {
         const dim = selectedDimensions[i];
@@ -626,6 +627,7 @@ function respParcoords(data, options) {
     const axisY2 = y[dim](bY2);
 
     svgTranslated.append("line")
+      .attr('class', 'select-range')
       .attr('x1', axisX)
       .attr('y1', axisY1)
       .attr('x2', axisX)
