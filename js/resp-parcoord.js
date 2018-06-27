@@ -106,7 +106,8 @@ function respParcoords(data, options) {
         .domain(d3.extent(data, function (p) {
           return +p[dimension];
         }))
-        .range([height - options.margin.top - options.dy, options.margin.bottom]);
+        .range([height - options.margin.top - options.dy, options.margin.bottom])
+        .clamp(true);
     });
     x.domain(selectedDimensions);
     dimensions = selectedDimensions;
@@ -397,8 +398,6 @@ function respParcoords(data, options) {
      //svg.append('rect').attrs({ x: yRange[0], y: yRange[1], width: 1, height: 1, fill: 'red' });
 
       //console.log(yRange);
-
-      showBrushSelectMarkers();
     }
 
 
@@ -439,6 +438,9 @@ function respParcoords(data, options) {
 		});
 	//console.log(rangeInfo);
 
+
+
+    showBrushSelectMarkers();
   }
 
   function handleTouches(origin) {
@@ -500,34 +502,44 @@ function respParcoords(data, options) {
   function showBrushSelectMarkers() {
     svgTranslated.selectAll('.select-marker').remove();
     if (brushSpec.type !== REGULAR) {
+      for (let i in selectedDimensions) {
+        const dim = selectedDimensions[i];
+        setSelectionMarker(dim, y[dim].invert(rangeInfo.frmY - options.margin.top));
+        setSelectionMarker(dim, y[dim].invert(rangeInfo.toY - options.margin.top));
+      }
       return;
     }
-    for (let dim in brushSpec.b) {
-      if (!selectedDimensions.includes(dim)) {
-        continue;
+    for (let i in selectedDimensions) {
+      const dim = selectedDimensions[i];
+      console.log(brushSpec.b);
+      if (brushSpec.b.hasOwnProperty(dim)
+        && brushSpec.b[dim] != undefined && brushSpec.b[dim] !== -1) {
+        for (let i in brushSpec.b[dim]) {
+          setSelectionMarker(dim, brushSpec.b[dim][i]);
+        }
+      } else {
+        setSelectionMarker(dim, y[dim].invert(rangeInfo.frmY - options.margin.top));
+        setSelectionMarker(dim, y[dim].invert(rangeInfo.toY - options.margin.top));
       }
-      if (brushSpec.b[dim] == undefined || brushSpec.b[dim] == -1) {
-        continue;
-      }
+    }
+  }
 
-      const axisX = x(dim);
-      for (let i in brushSpec.b[dim]) {
-        const axisY = y[dim](brushSpec.b[dim][i]);
+  function setSelectionMarker(dim, bY) {
+    const axisX = x(dim);
+    const axisY = y[dim](bY);
 
-        const polygonPoints = [
-          {x: axisX + 1, y: axisY - 1.5},
-          {x: axisX + 1, y: axisY + 1.5},
-          {x: axisX + 4, y: axisY}
-        ];
+    const polygonPoints = [
+      {x: axisX + 1, y: axisY - 1.5},
+      {x: axisX + 1, y: axisY + 1.5},
+      {x: axisX + 4, y: axisY}
+    ];
 
-        svgTranslated.append("polygon")
-          .attr('class', 'select-marker')
-          .attr('points', polygonPoints.map(function(d) {
-            return [d.x, d.y].join(',');
-          }).join(' '))
-          .attr('fill', 'green');
-      }
-      }
+    svgTranslated.append("polygon")
+      .attr('class', 'select-marker')
+      .attr('points', polygonPoints.map(function(d) {
+        return [d.x, d.y].join(',');
+      }).join(' '))
+      .attr('fill', 'green');
   }
 
   function handleDoubleBrush(touches){
