@@ -14,7 +14,7 @@ function respParcoords(data, options) {
     },
     dy: 2, // displacement for top margin
     dW: 0.5, // stroke width and displacement
-    titley: 2.5,  //displacement for axes titles
+    titley: 0,  //displacement for axes titles
     titleStep: -1.5,
     angStep: -45,  // rotation step
     ignoreDimensions: []
@@ -69,6 +69,8 @@ function respParcoords(data, options) {
   };
 
   let a;
+  let ax;
+  let sortIcon;
 
   let vbmx = 0, vbmy = 0, vbw = 100, vbh = 100;
   let vbr = vbmx + " " + vbmy + " " + vbw + " " + vbh;
@@ -352,7 +354,7 @@ function respParcoords(data, options) {
           return data;
         });
       // Add an axis and title; d3 v4 requires filling the title.
-      a = g.append("g")
+      ax = g.append("g")
         .attr("class", "axis")
         .each(function (data) {
           d3.select(this)
@@ -361,8 +363,25 @@ function respParcoords(data, options) {
                 .tickSize("1.5")
                 .tickPadding("1.5")
             );
-        })
-        .append("text")
+        });
+
+      const polyX = -0.5;
+      const polyY = 1;
+      const sortPolyPoints = [
+        {x: polyX - 1.5, y: polyY + 3},
+        {x: polyX + 1.5, y: polyY + 3},
+        {x: polyX, y: polyY + 0.5}
+      ];
+      sortIcon = ax.append('polygon')
+        .attr('points', sortPolyPoints.map(function(d) {
+          return [d.x, d.y].join(',');
+        }).join(' '))
+        .attr('fill', 'black')
+        .attr("transform", "rotate(180)");
+        // the following line flips the sortIcon
+      sortIcon.attr('transform-origin', polyX + ' ' + (polyY + 2));
+
+      a = ax.append("text")
         .attr("class", "title")
         .attr("fill", "black")
         .style("text-anchor", "middle")
