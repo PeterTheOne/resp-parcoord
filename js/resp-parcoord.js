@@ -368,9 +368,6 @@ function respParcoords(data, options) {
         	return data;
         }).on("touchend", function(d){
         	//hideDimension(d);
-        	dimensionSpec.inverted[d] = !dimensionSpec.inverted[d];
-        	dimensionSpec.changed = true;
-        	plot();
         }).call(d3.drag()
         //.on("start", dragstarted)
         .on("drag", dragged)
@@ -464,12 +461,28 @@ function respParcoords(data, options) {
 	  	.domain([rangeInfo.frmX,rangeInfo.toX])
 	  	.range([0,selectedDimensions.length-1]);
   	var idx = Math.round(xMapper(x));
-  	changeAxisIndex(d,idx)
+  	if(isNaN(idx)){
+  		invertAxis(d);
+  	} else {
+  		changeAxisIndex(d,idx)
+  	}
+  }
+  
+  function invertAxis(d){
+  	dimensionSpec.inverted[d] = !dimensionSpec.inverted[d];
+	dimensionSpec.changed = true;
+	plot();
   }
 
   function changeAxisIndex(d,idx){
+  	console.log(d+ " " + idx + 
+  		 " " +  selectedDimensions.indexOf(d));
+  	console.log(selectedDimensions);
   	selectedDimensions.splice(selectedDimensions.indexOf(d),1);
+  	console.log(selectedDimensions);
   	selectedDimensions.splice(idx, 0, d);
+  	console.log(selectedDimensions);
+  	dimensionSpec.changed = true;
   	plot();
   }
 
