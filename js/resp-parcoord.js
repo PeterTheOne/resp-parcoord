@@ -467,7 +467,7 @@ function respParcoords(data, options) {
   		changeAxisIndex(d,idx)
   	}
   }
-  
+
   function invertAxis(d){
   	dimensionSpec.inverted[d] = !dimensionSpec.inverted[d];
 	dimensionSpec.changed = true;
@@ -670,8 +670,10 @@ function respParcoords(data, options) {
     bboxSpec.x2 = touches[0][0];
     bboxSpec.y2 = touches[0][1];
     // TODO handle negative width/height
-    bboxSpec.box.attr("width", bboxSpec.x2 - bboxSpec.x1)
-                .attr("height", bboxSpec.y2 - bboxSpec.y1);
+    bboxSpec.box.attr("x", Math.min(bboxSpec.x2,bboxSpec.x1))
+    			.attr("y", Math.min(bboxSpec.y2,bboxSpec.y1))
+    			.attr("width", Math.abs(bboxSpec.x2 - bboxSpec.x1))
+                .attr("height", Math.abs(bboxSpec.y2 - bboxSpec.y1));
     filterBBox();
   }
 
