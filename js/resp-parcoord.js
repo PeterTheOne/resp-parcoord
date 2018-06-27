@@ -378,7 +378,7 @@ function respParcoords(data, options) {
         }).join(' '))
         .attr('fill', 'black')
         .attr("transform", function(d){
-        	return "rotate(" + (dimensionSpec.inverted[d] ? "0)" : "180)");
+        	return "rotate(" + (dimensionSpec.inverted[d] ? "180)" : "0)");
         }).attr("class","sortIcon")
         .on('touchend',function(d){
       	invertAxis(d);
