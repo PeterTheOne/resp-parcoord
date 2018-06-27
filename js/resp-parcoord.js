@@ -560,9 +560,9 @@ function respParcoords(data, options) {
         const axisY = y[dim](brushSpec.b[dim][i]);
 
         const polygonPoints = [
-          {x: axisX + 1, y: axisY - 1.5},
-          {x: axisX + 1, y: axisY + 1.5},
-          {x: axisX + 4, y: axisY}
+          {x: axisX + 3, y: axisY - 1.5},
+          {x: axisX + 3, y: axisY + 1.5},
+          {x: axisX + 0.5, y: axisY}
         ];
 
         svgTranslated.append("polygon")
@@ -669,7 +669,6 @@ function respParcoords(data, options) {
     }
     bboxSpec.x2 = touches[0][0];
     bboxSpec.y2 = touches[0][1];
-    // TODO handle negative width/height
     bboxSpec.box.attr("x", Math.min(bboxSpec.x2,bboxSpec.x1))
     			.attr("y", Math.min(bboxSpec.y2,bboxSpec.y1))
     			.attr("width", Math.abs(bboxSpec.x2 - bboxSpec.x1))
