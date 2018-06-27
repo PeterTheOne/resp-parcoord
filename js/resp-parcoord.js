@@ -371,8 +371,13 @@ function respParcoords(data, options) {
         	dimensionSpec.inverted[d] = !dimensionSpec.inverted[d];
         	dimensionSpec.changed = true;
         	plot();
-        });
+        }).on("drag", dragging).on("end", dragended);
 
+
+      //var tri = d3.symbol().size(options.dW).type(d3.symbolTriangle);
+      //svgTranslated.selectAll(".axis").append("path").attr("d",tri());
+      //g.append("path").attr("d",d3.svg.symbol().type("triangle-up"));
+      
       fontSize = vbh / 30; // set font size to 1/30 th of height??
 
       svgTranslated.selectAll(".axis")
@@ -436,6 +441,26 @@ function respParcoords(data, options) {
 			rangeInfo.toY = options.margin.top + bbox.y + bbox.height;
 		});
 	//console.log(rangeInfo);
+
+  }
+  var dragSpec = {
+  	x : undefined,
+  	y : undefined
+  };
+  function dragging(d){
+  	var t = d3.touches(svg);
+  	dragSpec.x = t[0][0];
+  	dragSpec.y = t[0][1];
+  }
+
+  function dragended(d){
+  	var x = Math.min(rangeInfo.toX,Math.max(rangeInfo.frmX,dragSpec.x));
+  	alert(x);
+  	var xMapper = d3.scaleLinear()
+	  	.domain([rangeInfo.frmX,rangeInfo.toX])
+	  	.range([0,selectedDimensions.length-1]);
+  	var dimensionIdx = Math.round(xMapper(x));
+  	alert(dimensionIdx + " " + selectedDimensions[dimensionIdx]);
 
   }
 
